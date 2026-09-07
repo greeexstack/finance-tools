@@ -3,9 +3,12 @@ import CalculatorPage from "@/components/calculators/CalculatorPage";
 import FDCalculator from "@/components/calculators/FDCalculator";
 
 export const metadata: Metadata = {
-  title: "FD Calculator | Fixed Deposit Calculator",
+  title: "FD Calculator",
   description:
     "Calculate your fixed deposit maturity amount and interest earned using deposit amount, interest rate, tenure, and compounding frequency.",
+  alternates: {
+    canonical: "/fd-calculator",
+  },
 };
 
 export default function FDCalculatorPage() {

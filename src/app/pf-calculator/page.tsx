@@ -3,9 +3,12 @@ import CalculatorPage from "@/components/calculators/CalculatorPage";
 import PFCalculator from "@/components/calculators/PFCalculator";
 
 export const metadata: Metadata = {
-  title: "PF Calculator | Provident Fund Calculator",
+  title: "PF Calculator",
   description:
     "Estimate your provident fund value, total contributions, and interest earned using your monthly contributions, interest rate, and tenure.",
+  alternates: {
+    canonical: "/pf-calculator",
+  },
 };
 
 export default function PFCalculatorPage() {

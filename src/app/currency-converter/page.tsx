@@ -1,9 +1,13 @@
+import type { Metadata } from "next";
 import CurrencyConverter from "@/components/currency/CurrencyConverter";
 
-export const metadata = {
-  title: "Currency Converter | Finance Tools",
+export const metadata: Metadata = {
+  title: "Currency Converter",
   description:
-    "Convert between currencies using current exchange rates.",
+    "Convert between currencies using current exchange rates with a simple, fast currency converter.",
+  alternates: {
+    canonical: "/currency-converter",
+  },
 };
 
 export default function CurrencyConverterPage() {

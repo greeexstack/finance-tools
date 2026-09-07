@@ -4,10 +4,56 @@ import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
+const siteUrl = "https://finance-tools-ten-omega.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Finance Tools",
+  metadataBase: new URL(siteUrl),
+
+  title: {
+    default: "Finance Tools",
+    template: "%s | Finance Tools",
+  },
+
   description:
-    "Simple, fast, and practical finance calculators for everyday financial planning.",
+    "Simple, fast, and practical finance calculators for savings, investments, deposits, withdrawals, currency conversion, and everyday financial planning.",
+
+  applicationName: "Finance Tools",
+
+  authors: [
+    {
+      name: "Finance Tools",
+    },
+  ],
+
+  creator: "Finance Tools",
+
+  publisher: "Finance Tools",
+
+  alternates: {
+    canonical: "/",
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+  },
+
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteUrl,
+    siteName: "Finance Tools",
+    title: "Finance Tools",
+    description:
+      "Simple, fast, and practical finance calculators for everyday financial planning.",
+  },
+
+  twitter: {
+    card: "summary",
+    title: "Finance Tools",
+    description:
+      "Simple, fast, and practical finance calculators for everyday financial planning.",
+  },
 };
 
 export default function RootLayout({

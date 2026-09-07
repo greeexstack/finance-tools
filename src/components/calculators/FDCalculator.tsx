@@ -12,6 +12,21 @@ const COMPOUNDING_OPTIONS = [
   { label: "Yearly", value: 1 },
 ];
 
+const SVG_SIZE = 160;
+const SVG_CENTER = SVG_SIZE / 2;
+const SVG_RADIUS = 58;
+const SVG_STROKE_WIDTH = 24;
+
+type DonutSegment = "principal" | "interest";
+
+type SegmentDetails = {
+  label: "Principal" | "Interest";
+  amount: number;
+  percentage: number;
+  colorClass: string;
+  dotClass: string;
+};
+
 function formatCurrency(
   amount: number,
   currencyCode: string,
@@ -31,6 +46,47 @@ function formatCurrency(
   }
 }
 
+function formatCompactCurrency(
+  amount: number,
+  currencyCode: string,
+): string {
+  const currency = getCurrency(currencyCode);
+
+  let value = amount;
+  let suffix = "";
+
+  if (currencyCode === "INR") {
+    if (Math.abs(amount) >= 10_000_000) {
+      value = amount / 10_000_000;
+      suffix = "Cr";
+    } else if (Math.abs(amount) >= 100_000) {
+      value = amount / 100_000;
+      suffix = "L";
+    } else if (Math.abs(amount) >= 1_000) {
+      value = amount / 1_000;
+      suffix = "K";
+    }
+  } else {
+    if (Math.abs(amount) >= 1_000_000_000) {
+      value = amount / 1_000_000_000;
+      suffix = "B";
+    } else if (Math.abs(amount) >= 1_000_000) {
+      value = amount / 1_000_000;
+      suffix = "M";
+    } else if (Math.abs(amount) >= 1_000) {
+      value = amount / 1_000;
+      suffix = "K";
+    }
+  }
+
+  const formattedValue = new Intl.NumberFormat(undefined, {
+    maximumFractionDigits:
+      value >= 100 ? 0 : value >= 10 ? 1 : 2,
+  }).format(value);
+
+  return `${currency.symbol}${formattedValue}${suffix}`;
+}
+
 function hasValidValues(
   principal: string,
   rate: string,
@@ -43,14 +99,200 @@ function hasValidValues(
   );
 }
 
+function polarToCartesian(
+  centerX: number,
+  centerY: number,
+  radius: number,
+  angleInDegrees: number,
+) {
+  const angleInRadians =
+    ((angleInDegrees - 90) * Math.PI) / 180;
+
+  return {
+    x: centerX + radius * Math.cos(angleInRadians),
+    y: centerY + radius * Math.sin(angleInRadians),
+  };
+}
+
+function describeArc(
+  startAngle: number,
+  endAngle: number,
+) {
+  const start = polarToCartesian(
+    SVG_CENTER,
+    SVG_CENTER,
+    SVG_RADIUS,
+    endAngle,
+  );
+
+  const end = polarToCartesian(
+    SVG_CENTER,
+    SVG_CENTER,
+    SVG_RADIUS,
+    startAngle,
+  );
+
+  const largeArcFlag =
+    endAngle - startAngle <= 180 ? "0" : "1";
+
+  return [
+    `M ${start.x} ${start.y}`,
+    `A ${SVG_RADIUS} ${SVG_RADIUS} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`,
+  ].join(" ");
+}
+
+function InteractiveDonut({
+  principalPercentage,
+  interestPercentage,
+  principalAmount,
+  interestAmount,
+  activeCurrency,
+  activeSegment,
+  onSegmentChange,
+}: {
+  principalPercentage: number;
+  interestPercentage: number;
+  principalAmount: number;
+  interestAmount: number;
+  activeCurrency: string;
+  activeSegment: DonutSegment;
+  onSegmentChange: (segment: DonutSegment) => void;
+}) {
+  const principalEndAngle =
+    principalPercentage * 3.6;
+
+  const getSegmentDetails = (
+    segment: DonutSegment,
+  ): SegmentDetails => {
+    if (segment === "interest") {
+      return {
+        label: "Interest",
+        amount: interestAmount,
+        percentage: interestPercentage,
+        colorClass: "text-amber-300",
+        dotClass: "bg-amber-400",
+      };
+    }
+
+    return {
+      label: "Principal",
+      amount: principalAmount,
+      percentage: principalPercentage,
+      colorClass: "text-indigo-300",
+      dotClass: "bg-indigo-300",
+    };
+  };
+
+  const selectedSegment = getSegmentDetails(activeSegment);
+
+  return (
+    <div className="relative mx-auto mt-7 flex h-44 w-44 items-center justify-center">
+      <div
+        aria-hidden="true"
+        className="absolute inset-3 rounded-full bg-indigo-400/10 blur-xl"
+      />
+
+      <svg
+        viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`}
+        className="relative h-40 w-40 overflow-visible"
+        aria-hidden="true"
+      >
+        <circle
+          cx={SVG_CENTER}
+          cy={SVG_CENTER}
+          r={SVG_RADIUS}
+          fill="none"
+          stroke="rgba(255,255,255,0.06)"
+          strokeWidth={SVG_STROKE_WIDTH}
+        />
+
+        {principalPercentage > 0 && (
+          <path
+            d={describeArc(0, principalEndAngle)}
+            fill="none"
+            stroke="#a5b4fc"
+            strokeWidth={SVG_STROKE_WIDTH}
+            strokeLinecap="round"
+            className="cursor-pointer transition-all duration-200"
+            style={{
+              opacity:
+                activeSegment !== "principal"
+                  ? 0.5
+                  : 1,
+              filter:
+                activeSegment === "principal"
+                  ? "drop-shadow(0 0 7px rgba(165,180,252,0.45))"
+                  : undefined,
+            }}
+            onMouseEnter={() =>
+              onSegmentChange("principal")
+            }
+          />
+        )}
+
+        {interestPercentage > 0 && (
+          <path
+            d={describeArc(
+              principalEndAngle,
+              360,
+            )}
+            fill="none"
+            stroke="#fbbf24"
+            strokeWidth={SVG_STROKE_WIDTH}
+            strokeLinecap="round"
+            className="cursor-pointer transition-all duration-200"
+            style={{
+              opacity:
+                activeSegment !== "interest"
+                  ? 0.5
+                  : 1,
+              filter:
+                activeSegment === "interest"
+                  ? "drop-shadow(0 0 7px rgba(251,191,36,0.45))"
+                  : undefined,
+            }}
+            onMouseEnter={() =>
+              onSegmentChange("interest")
+            }
+          />
+        )}
+      </svg>
+
+      <div className="pointer-events-none absolute flex h-[102px] w-[102px] flex-col items-center justify-center rounded-full border border-white/10 bg-slate-950/95 px-2 text-center shadow-inner">
+        <span
+          className={`text-[10px] font-semibold uppercase tracking-[0.12em] ${selectedSegment.colorClass}`}
+        >
+          {selectedSegment.label}
+        </span>
+
+        <span className="mt-1 max-w-full break-words text-base font-bold leading-tight tracking-tight text-white">
+          {formatCompactCurrency(
+            selectedSegment.amount,
+            activeCurrency,
+          )}
+        </span>
+
+        <span className="mt-1 text-[10px] font-medium text-slate-500">
+          {selectedSegment.percentage.toFixed(1)}%
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function FDCalculator() {
   const [principal, setPrincipal] = useState("");
   const [rate, setRate] = useState("");
   const [tenure, setTenure] = useState("");
   const [compounding, setCompounding] = useState("4");
   const [currency, setCurrency] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
-  const isValid = hasValidValues(principal, rate, tenure);
+  const isValid = hasValidValues(
+    principal,
+    rate,
+    tenure,
+  );
 
   const result = useMemo(() => {
     if (!isValid) {
@@ -63,25 +305,89 @@ export default function FDCalculator() {
       tenureYears: Number(tenure),
       compoundingFrequency: Number(compounding),
     });
-  }, [principal, rate, tenure, compounding, isValid]);
+  }, [
+    principal,
+    rate,
+    tenure,
+    compounding,
+    isValid,
+  ]);
+
+  const activeCurrency = currency ?? "INR";
+
+  const principalPercentage =
+    result && result.maturity > 0
+      ? (result.principal / result.maturity) * 100
+      : 0;
+
+  const interestPercentage =
+    result && result.maturity > 0
+      ? (result.interest / result.maturity) * 100
+      : 0;
+
+  const [activeSegment, setActiveSegment] =
+    useState<DonutSegment>("principal");
 
   const resetCalculator = () => {
     setPrincipal("");
     setRate("");
     setTenure("");
     setCompounding("4");
+    setCopied(false);
+    setActiveSegment("principal");
   };
 
-  const activeCurrency = currency ?? "INR";
+  const copyMaturityAmount = async () => {
+    if (!result) {
+      return;
+    }
+
+    const formattedValue = formatCurrency(
+      result.maturity,
+      activeCurrency,
+    );
+
+    try {
+      await navigator.clipboard.writeText(formattedValue);
+
+      setCopied(true);
+
+      window.setTimeout(() => {
+        setCopied(false);
+      }, 1800);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  const selectSegment = (
+    segment: DonutSegment,
+  ) => {
+    setActiveSegment(segment);
+  };
 
   return (
-    <div className="grid min-w-0 gap-6 lg:grid-cols-2">
-      <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <h2 className="text-xl font-semibold">
-          Enter your FD details
-        </h2>
+    <div className="grid min-w-0 gap-6 lg:grid-cols-2 lg:items-start">
+      {/* Input panel */}
+      <div className="min-w-0 rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_12px_40px_rgba(15,23,42,0.06)] sm:p-7">
+        <div className="flex items-start gap-3">
+          <span
+            aria-hidden="true"
+            className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-indigo-500 shadow-[0_0_0_4px_rgba(99,102,241,0.10)]"
+          />
 
-        <div className="mt-6 space-y-5">
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+              Enter your FD details
+            </h2>
+
+            <p className="mt-1.5 text-sm leading-6 text-slate-500">
+              Enter the details below to see your estimated maturity amount.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-7 space-y-5">
           <CurrencySelector
             value={currency}
             onChange={setCurrency}
@@ -90,7 +396,7 @@ export default function FDCalculator() {
           <div>
             <label
               htmlFor="fd-principal"
-              className="mb-2 block text-sm font-medium"
+              className="mb-2 block text-sm font-medium text-slate-700"
             >
               Principal Amount
             </label>
@@ -99,17 +405,21 @@ export default function FDCalculator() {
               id="fd-principal"
               type="number"
               min="1"
+              step="any"
+              inputMode="decimal"
               value={principal}
-              onChange={(e) => setPrincipal(e.target.value)}
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              onChange={(e) =>
+                setPrincipal(e.target.value)
+              }
               placeholder="Enter amount"
+              className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             />
           </div>
 
           <div>
             <label
               htmlFor="fd-rate"
-              className="mb-2 block text-sm font-medium"
+              className="mb-2 block text-sm font-medium text-slate-700"
             >
               Annual Interest Rate (%)
             </label>
@@ -119,17 +429,20 @@ export default function FDCalculator() {
               type="number"
               min="0"
               step="0.01"
+              inputMode="decimal"
               value={rate}
-              onChange={(e) => setRate(e.target.value)}
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              onChange={(e) =>
+                setRate(e.target.value)
+              }
               placeholder="Enter rate"
+              className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             />
           </div>
 
           <div>
             <label
               htmlFor="fd-tenure"
-              className="mb-2 block text-sm font-medium"
+              className="mb-2 block text-sm font-medium text-slate-700"
             >
               Tenure (Years)
             </label>
@@ -139,17 +452,20 @@ export default function FDCalculator() {
               type="number"
               min="0.01"
               step="0.01"
+              inputMode="decimal"
               value={tenure}
-              onChange={(e) => setTenure(e.target.value)}
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              onChange={(e) =>
+                setTenure(e.target.value)
+              }
               placeholder="Enter years"
+              className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             />
           </div>
 
           <div>
             <label
               htmlFor="fd-compounding"
-              className="mb-2 block text-sm font-medium"
+              className="mb-2 block text-sm font-medium text-slate-700"
             >
               Compounding Frequency
             </label>
@@ -157,8 +473,10 @@ export default function FDCalculator() {
             <select
               id="fd-compounding"
               value={compounding}
-              onChange={(e) => setCompounding(e.target.value)}
-              className="w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              onChange={(e) =>
+                setCompounding(e.target.value)
+              }
+              className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             >
               {COMPOUNDING_OPTIONS.map((option) => (
                 <option
@@ -174,67 +492,271 @@ export default function FDCalculator() {
           <button
             type="button"
             onClick={resetCalculator}
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 font-medium transition hover:bg-slate-50"
+            className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 hover:shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
           >
             Reset
           </button>
         </div>
       </div>
 
-      <div className="min-w-0 rounded-2xl bg-slate-900 p-5 text-white shadow-sm sm:p-6">
-        <h2 className="text-xl font-semibold">
-          Your FD result
-        </h2>
+      {/* Result panel */}
+      <div className="relative min-w-0 overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-5 text-white shadow-[0_18px_50px_rgba(15,23,42,0.18)] sm:p-7 lg:sticky lg:top-24">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 -top-24 h-52 w-52 rounded-full bg-indigo-500/10 blur-3xl"
+        />
 
-        {result ? (
-          <div className="mt-6 space-y-4">
-            <div className="rounded-xl bg-white/10 p-5">
-              <p className="text-sm text-slate-300">
-                Maturity Amount
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-24 -left-24 h-52 w-52 rounded-full bg-amber-400/5 blur-3xl"
+        />
+
+        <div className="relative">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-300">
+                Result
               </p>
 
-              <p className="mt-2 break-words text-3xl font-bold">
-                {formatCurrency(
-                  result.maturity,
-                  activeCurrency,
+              <h2 className="mt-2 text-xl font-semibold tracking-tight text-white sm:text-2xl">
+                Your FD result
+              </h2>
+
+              <p className="mt-1.5 text-sm leading-6 text-slate-400">
+                Estimated based on the values you entered.
+              </p>
+            </div>
+
+            {result && (
+              <button
+                type="button"
+                onClick={copyMaturityAmount}
+                aria-label="Copy maturity amount"
+                title="Copy maturity amount"
+                className="inline-flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.07] text-slate-200 backdrop-blur transition-all duration-200 hover:scale-[1.02] hover:border-white/20 hover:bg-white/[0.12] hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20"
+              >
+                {copied ? (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-5 w-5"
+                    aria-hidden="true"
+                  >
+                    <path d="m5 12 4 4L19 6" />
+                  </svg>
+                ) : (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-5 w-5"
+                    aria-hidden="true"
+                  >
+                    <rect
+                      x="9"
+                      y="9"
+                      width="10"
+                      height="10"
+                      rx="2"
+                    />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
                 )}
-              </p>
-            </div>
+              </button>
+            )}
+          </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-xl bg-white/10 p-4">
-                <p className="text-sm text-slate-300">
-                  Principal Invested
-                </p>
+          {result ? (
+            <div className="relative mt-6 space-y-4">
+              {/* Main value */}
+              <div className="min-h-[176px] rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-sm font-medium text-slate-300">
+                    Maturity Amount
+                  </p>
 
-                <p className="mt-1 break-words text-lg font-semibold">
+                  <span className="rounded-full border border-amber-400/15 bg-amber-400/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-300">
+                    Estimated
+                  </span>
+                </div>
+
+                <p className="mt-4 break-words text-4xl font-bold tracking-tight text-white sm:text-5xl">
                   {formatCurrency(
-                    result.principal,
+                    result.maturity,
                     activeCurrency,
                   )}
                 </p>
+
+                {copied && (
+                  <p className="mt-3 text-sm font-medium text-indigo-300">
+                    Copied to clipboard
+                  </p>
+                )}
               </div>
 
-              <div className="rounded-xl bg-white/10 p-4">
-                <p className="text-sm text-slate-300">
-                  Interest Earned
+              {/* Breakdown */}
+              <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-200">
+                      Investment breakdown
+                    </p>
+
+                    <p className="mt-1 text-xs leading-5 text-slate-400">
+                      Select a segment to inspect its share
+                    </p>
+                  </div>
+
+                  <span className="shrink-0 rounded-full bg-amber-400/10 px-2.5 py-1 text-xs font-semibold text-amber-300">
+                    {interestPercentage.toFixed(1)}% interest
+                  </span>
+                </div>
+
+                <InteractiveDonut
+                  principalPercentage={
+                    principalPercentage
+                  }
+                  interestPercentage={
+                    interestPercentage
+                  }
+                  principalAmount={
+                    result.principal
+                  }
+                  interestAmount={
+                    result.interest
+                  }
+                  activeCurrency={
+                    activeCurrency
+                  }
+                  activeSegment={activeSegment}
+                  onSegmentChange={
+                    selectSegment
+                  }
+                />
+
+                <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      selectSegment(
+                        "principal",
+                      )
+                    }
+                    className={`min-h-12 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-400/20 ${
+                      activeSegment === "principal"
+                        ? "border-indigo-300/30 bg-indigo-300/10"
+                        : "border-white/8 bg-black/10 hover:border-indigo-300/20 hover:bg-indigo-300/5"
+                    }`}
+                    aria-pressed={
+                      activeSegment ===
+                      "principal"
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        aria-hidden="true"
+                        className="h-2.5 w-2.5 shrink-0 rounded-full bg-indigo-300 shadow-[0_0_8px_rgba(165,180,252,0.45)]"
+                      />
+
+                      <p className="text-xs font-medium text-slate-400">
+                        Principal
+                      </p>
+                    </div>
+
+                    <p className="mt-2 break-words text-base font-semibold text-white">
+                      {formatCurrency(
+                        result.principal,
+                        activeCurrency,
+                      )}
+                    </p>
+
+                    <p className="mt-1 text-xs text-slate-500">
+                      {principalPercentage.toFixed(1)}%
+                      {" "}of total
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      selectSegment(
+                        "interest",
+                      )
+                    }
+                    className={`min-h-12 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-amber-400/20 ${
+                      activeSegment === "interest"
+                        ? "border-amber-300/30 bg-amber-300/10"
+                        : "border-white/8 bg-black/10 hover:border-amber-300/20 hover:bg-amber-300/5"
+                    }`}
+                    aria-pressed={
+                      activeSegment === "interest"
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        aria-hidden="true"
+                        className="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.45)]"
+                      />
+
+                      <p className="text-xs font-medium text-slate-400">
+                        Interest
+                      </p>
+                    </div>
+
+                    <p className="mt-2 break-words text-base font-semibold text-white">
+                      {formatCurrency(
+                        result.interest,
+                        activeCurrency,
+                      )}
+                    </p>
+
+                    <p className="mt-1 text-xs text-slate-500">
+                      {interestPercentage.toFixed(1)}%
+                      {" "}of total
+                    </p>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="relative mt-6 min-h-[384px] rounded-2xl border border-white/10 bg-white/[0.06] p-5 backdrop-blur-sm">
+              <div className="flex min-h-[344px] flex-col justify-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/[0.06]">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-5 w-5 text-indigo-300"
+                    aria-hidden="true"
+                  >
+                    <path d="M4 19V5" />
+                    <path d="M4 19h16" />
+                    <path d="m8 15 3-4 3 2 4-6" />
+                  </svg>
+                </div>
+
+                <p className="mt-5 text-base font-semibold text-slate-200">
+                  Your result will appear here.
                 </p>
 
-                <p className="mt-1 break-words text-lg font-semibold">
-                  {formatCurrency(
-                    result.interest,
-                    activeCurrency,
-                  )}
+                <p className="mt-2 max-w-sm text-sm leading-6 text-slate-400">
+                  Enter your principal amount, interest rate, and tenure to see
+                  your estimated maturity amount and interest earned.
                 </p>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="mt-6 rounded-xl bg-white/10 p-5 text-slate-300">
-            Enter your FD details to see your estimated maturity
-            amount.
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

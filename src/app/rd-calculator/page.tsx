@@ -3,9 +3,12 @@ import CalculatorPage from "@/components/calculators/CalculatorPage";
 import RDCalculator from "@/components/calculators/RDCalculator";
 
 export const metadata: Metadata = {
-  title: "RD Calculator | Recurring Deposit Calculator",
+  title: "RD Calculator",
   description:
-    "Calculate recurring deposit maturity amount and interest earned using your monthly deposit, interest rate, and tenure.",
+    "Calculate your recurring deposit maturity amount and interest earned using your monthly deposit, interest rate, and tenure.",
+  alternates: {
+    canonical: "/rd-calculator",
+  },
 };
 
 export default function RDCalculatorPage() {

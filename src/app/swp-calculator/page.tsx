@@ -3,9 +3,12 @@ import CalculatorPage from "@/components/calculators/CalculatorPage";
 import SWPCalculator from "@/components/calculators/SWPCalculator";
 
 export const metadata: Metadata = {
-  title: "SWP Calculator | Systematic Withdrawal Plan Calculator",
+  title: "SWP Calculator",
   description:
     "Calculate estimated withdrawals and remaining investment value using your initial investment, monthly withdrawal, expected return, and tenure.",
+  alternates: {
+    canonical: "/swp-calculator",
+  },
 };
 
 export default function SWPCalculatorPage() {
