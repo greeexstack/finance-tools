@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { calculateFD } from "@/lib/fd-calculator";
-import { formatINR } from "@/lib/format-currency";
+import { getCurrency } from "@/lib/currencies";
+import CurrencySelector from "@/components/calculators/CurrencySelector";
 
 const COMPOUNDING_OPTIONS = [
   { label: "Monthly", value: 12 },
@@ -11,11 +12,31 @@ const COMPOUNDING_OPTIONS = [
   { label: "Yearly", value: 1 },
 ];
 
+function formatCurrency(
+  amount: number,
+  currencyCode: string,
+): string {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: currencyCode,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    const currency = getCurrency(currencyCode);
+
+    return `${currency.symbol}${amount.toLocaleString(undefined, {
+      maximumFractionDigits: 2,
+    })}`;
+  }
+}
+
 export default function FDCalculator() {
   const [principal, setPrincipal] = useState("100000");
   const [rate, setRate] = useState("7");
   const [tenure, setTenure] = useState("5");
   const [compounding, setCompounding] = useState("4");
+  const [currency, setCurrency] = useState<string | null>(null);
 
   const result = useMemo(() => {
     return calculateFD({
@@ -34,11 +55,18 @@ export default function FDCalculator() {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold">Enter your FD details</h2>
+    <div className="grid min-w-0 gap-6 lg:grid-cols-2">
+      <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <h2 className="text-xl font-semibold">
+          Enter your FD details
+        </h2>
 
         <div className="mt-6 space-y-5">
+          <CurrencySelector
+            value={currency}
+            onChange={setCurrency}
+          />
+
           <div>
             <label
               htmlFor="fd-principal"
@@ -53,7 +81,7 @@ export default function FDCalculator() {
               min="1"
               value={principal}
               onChange={(e) => setPrincipal(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
               placeholder="100000"
             />
           </div>
@@ -73,7 +101,7 @@ export default function FDCalculator() {
               step="0.01"
               value={rate}
               onChange={(e) => setRate(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
               placeholder="7"
             />
           </div>
@@ -93,7 +121,7 @@ export default function FDCalculator() {
               step="0.01"
               value={tenure}
               onChange={(e) => setTenure(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
               placeholder="5"
             />
           </div>
@@ -110,7 +138,7 @@ export default function FDCalculator() {
               id="fd-compounding"
               value={compounding}
               onChange={(e) => setCompounding(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              className="w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
             >
               {COMPOUNDING_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -130,16 +158,23 @@ export default function FDCalculator() {
         </div>
       </div>
 
-      <div className="rounded-2xl bg-slate-900 p-6 text-white shadow-sm">
-        <h2 className="text-xl font-semibold">Your FD result</h2>
+      <div className="min-w-0 rounded-2xl bg-slate-900 p-5 text-white shadow-sm sm:p-6">
+        <h2 className="text-xl font-semibold">
+          Your FD result
+        </h2>
 
         {result ? (
           <div className="mt-6 space-y-4">
             <div className="rounded-xl bg-white/10 p-5">
-              <p className="text-sm text-slate-300">Maturity Amount</p>
+              <p className="text-sm text-slate-300">
+                Maturity Amount
+              </p>
 
-              <p className="mt-2 text-3xl font-bold">
-                {formatINR(result.maturity)}
+              <p className="mt-2 break-words text-3xl font-bold">
+                {formatCurrency(
+                  result.maturity,
+                  currency ?? "INR",
+                )}
               </p>
             </div>
 
@@ -149,8 +184,11 @@ export default function FDCalculator() {
                   Principal Invested
                 </p>
 
-                <p className="mt-1 text-lg font-semibold">
-                  {formatINR(result.principal)}
+                <p className="mt-1 break-words text-lg font-semibold">
+                  {formatCurrency(
+                    result.principal,
+                    currency ?? "INR",
+                  )}
                 </p>
               </div>
 
@@ -159,8 +197,11 @@ export default function FDCalculator() {
                   Interest Earned
                 </p>
 
-                <p className="mt-1 text-lg font-semibold">
-                  {formatINR(result.interest)}
+                <p className="mt-1 break-words text-lg font-semibold">
+                  {formatCurrency(
+                    result.interest,
+                    currency ?? "INR",
+                  )}
                 </p>
               </div>
             </div>

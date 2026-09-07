@@ -2,13 +2,36 @@
 
 import { useMemo, useState } from "react";
 import { calculatePF } from "@/lib/pf-calculator";
-import { formatINR } from "@/lib/format-currency";
+import { getCurrency } from "@/lib/currencies";
+import CurrencySelector from "@/components/calculators/CurrencySelector";
+
+function formatCurrency(
+  amount: number,
+  currencyCode: string,
+): string {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: currencyCode,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    const currency = getCurrency(currencyCode);
+
+    return `${currency.symbol}${amount.toLocaleString(undefined, {
+      maximumFractionDigits: 2,
+    })}`;
+  }
+}
 
 export default function PFCalculator() {
-  const [employeeContribution, setEmployeeContribution] = useState("1800");
-  const [employerContribution, setEmployerContribution] = useState("1800");
+  const [employeeContribution, setEmployeeContribution] =
+    useState("1800");
+  const [employerContribution, setEmployerContribution] =
+    useState("1800");
   const [rate, setRate] = useState("8.25");
   const [tenure, setTenure] = useState("20");
+  const [currency, setCurrency] = useState<string | null>(null);
 
   const result = useMemo(() => {
     return calculatePF({
@@ -32,13 +55,18 @@ export default function PFCalculator() {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="grid min-w-0 gap-6 lg:grid-cols-2">
+      <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <h2 className="text-xl font-semibold">
           Enter your PF details
         </h2>
 
         <div className="mt-6 space-y-5">
+          <CurrencySelector
+            value={currency}
+            onChange={setCurrency}
+          />
+
           <div>
             <label
               htmlFor="pf-employee"
@@ -55,7 +83,7 @@ export default function PFCalculator() {
               onChange={(e) =>
                 setEmployeeContribution(e.target.value)
               }
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
               placeholder="1800"
             />
           </div>
@@ -76,7 +104,7 @@ export default function PFCalculator() {
               onChange={(e) =>
                 setEmployerContribution(e.target.value)
               }
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
               placeholder="1800"
             />
           </div>
@@ -96,7 +124,7 @@ export default function PFCalculator() {
               step="0.01"
               value={rate}
               onChange={(e) => setRate(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
               placeholder="8.25"
             />
           </div>
@@ -116,7 +144,7 @@ export default function PFCalculator() {
               step="0.01"
               value={tenure}
               onChange={(e) => setTenure(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
               placeholder="20"
             />
           </div>
@@ -131,7 +159,7 @@ export default function PFCalculator() {
         </div>
       </div>
 
-      <div className="rounded-2xl bg-slate-900 p-6 text-white shadow-sm">
+      <div className="min-w-0 rounded-2xl bg-slate-900 p-5 text-white shadow-sm sm:p-6">
         <h2 className="text-xl font-semibold">
           Your PF result
         </h2>
@@ -143,8 +171,11 @@ export default function PFCalculator() {
                 Estimated PF Value
               </p>
 
-              <p className="mt-2 text-3xl font-bold">
-                {formatINR(result.maturityAmount)}
+              <p className="mt-2 break-words text-3xl font-bold">
+                {formatCurrency(
+                  result.maturityAmount,
+                  currency ?? "INR",
+                )}
               </p>
             </div>
 
@@ -154,8 +185,11 @@ export default function PFCalculator() {
                   Total Contributions
                 </p>
 
-                <p className="mt-1 text-lg font-semibold">
-                  {formatINR(result.totalContributions)}
+                <p className="mt-1 break-words text-lg font-semibold">
+                  {formatCurrency(
+                    result.totalContributions,
+                    currency ?? "INR",
+                  )}
                 </p>
               </div>
 
@@ -164,8 +198,11 @@ export default function PFCalculator() {
                   Interest Earned
                 </p>
 
-                <p className="mt-1 text-lg font-semibold">
-                  {formatINR(result.interestEarned)}
+                <p className="mt-1 break-words text-lg font-semibold">
+                  {formatCurrency(
+                    result.interestEarned,
+                    currency ?? "INR",
+                  )}
                 </p>
               </div>
             </div>
