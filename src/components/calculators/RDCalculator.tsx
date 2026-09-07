@@ -155,9 +155,7 @@ function InteractiveDonut({
                   : undefined,
             }}
             onMouseEnter={() =>
-              onSegmentChange(
-                "deposited",
-              )
+              onSegmentChange("deposited")
             }
           />
         )}
@@ -215,11 +213,15 @@ function InteractiveDonut({
 export default function RDCalculator() {
   const [monthlyDeposit, setMonthlyDeposit] =
     useState("");
+
   const [rate, setRate] = useState("");
+
   const [tenure, setTenure] = useState("");
+
   const [currency, setCurrency] = useState<
     string | null
   >(null);
+
   const [copied, setCopied] = useState(false);
 
   const [activeSegment, setActiveSegment] =
@@ -307,7 +309,7 @@ export default function RDCalculator() {
             className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-indigo-500 shadow-[0_0_0_4px_rgba(99,102,241,0.10)]"
           />
 
-          <div>
+          <div className="min-w-0">
             <h2 className="text-xl font-semibold tracking-tight text-slate-900">
               Enter your RD details
             </h2>
@@ -417,9 +419,10 @@ export default function RDCalculator() {
           className="pointer-events-none absolute -bottom-24 -left-24 h-52 w-52 rounded-full bg-amber-400/5 blur-3xl"
         />
 
-        <div className="relative">
-          <div className="flex items-start justify-between gap-4">
-            <div>
+        <div className="relative min-w-0">
+          {/* Result header */}
+          <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 w-full">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-300">
                 Result
               </p>
@@ -439,7 +442,7 @@ export default function RDCalculator() {
                 onClick={copyMaturityAmount}
                 aria-label="Copy maturity amount"
                 title="Copy maturity amount"
-                className="inline-flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.07] text-slate-200 backdrop-blur transition-all duration-200 hover:scale-[1.02] hover:border-white/20 hover:bg-white/[0.12] hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20"
+                className="inline-flex min-h-12 w-full shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.07] text-slate-200 backdrop-blur transition-all duration-200 hover:scale-[1.02] hover:border-white/20 hover:bg-white/[0.12] hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20 sm:w-12"
               >
                 {copied ? (
                   <svg
@@ -472,6 +475,7 @@ export default function RDCalculator() {
                       height="10"
                       rx="2"
                     />
+
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                   </svg>
                 )}
@@ -480,20 +484,20 @@ export default function RDCalculator() {
           </div>
 
           {result ? (
-            <div className="relative mt-6 space-y-4">
+            <div className="relative mt-6 min-w-0 space-y-4">
               {/* Main value */}
-              <div className="min-h-[176px] rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
+              <div className="min-w-0 min-h-[176px] rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
                 <div className="flex items-center justify-between gap-4">
                   <p className="text-sm font-medium text-slate-300">
                     Maturity Amount
                   </p>
 
-                  <span className="rounded-full border border-amber-400/15 bg-amber-400/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-300">
+                  <span className="shrink-0 rounded-full border border-amber-400/15 bg-amber-400/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-300">
                     Estimated
                   </span>
                 </div>
 
-                <div className="mt-4 min-w-0">
+                <div className="mt-4 min-w-0 w-full">
                   <ResultAmount
                     value={
                       result.maturityAmount
@@ -514,9 +518,9 @@ export default function RDCalculator() {
               </div>
 
               {/* Breakdown */}
-              <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
+              <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
                 <div className="flex items-start justify-between gap-4">
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm font-semibold text-slate-200">
                       Investment breakdown
                     </p>

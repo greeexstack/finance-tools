@@ -365,8 +365,9 @@ export default function PPFCalculator() {
           </div>
         ) : (
           <div className="p-5 sm:p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
+            {/* Result header */}
+            <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 w-full">
                 <p className="text-sm font-medium text-slate-400">
                   Estimated PPF Value
                 </p>
@@ -387,7 +388,7 @@ export default function PPFCalculator() {
               <button
                 type="button"
                 onClick={handleCopyResult}
-                className="shrink-0 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
+                className="w-full shrink-0 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10 sm:w-auto"
               >
                 Copy
               </button>

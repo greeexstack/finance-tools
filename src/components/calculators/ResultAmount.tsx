@@ -19,7 +19,8 @@ function getFontSize(
     if (length <= 16) return "1rem";
     if (length <= 20) return "0.9375rem";
     if (length <= 24) return "0.875rem";
-    return "0.8125rem";
+    if (length <= 28) return "0.8125rem";
+    return "0.75rem";
   }
 
   if (length <= 10) return "3rem";
@@ -27,7 +28,10 @@ function getFontSize(
   if (length <= 16) return "2.45rem";
   if (length <= 20) return "2.15rem";
   if (length <= 24) return "1.9rem";
-  return "1.65rem";
+  if (length <= 28) return "1.65rem";
+  if (length <= 32) return "1.4rem";
+  if (length <= 36) return "1.2rem";
+  return "1.05rem";
 }
 
 export default function ResultAmount({
@@ -42,11 +46,9 @@ export default function ResultAmount({
   );
 
   return (
-    <div
-      className={`min-w-0 max-w-full overflow-hidden ${className}`}
-    >
+    <div className="min-w-0 w-full max-w-full overflow-hidden">
       <p
-        className="max-w-full overflow-hidden whitespace-nowrap font-bold leading-none tracking-tight"
+        className={`block w-full max-w-full overflow-hidden whitespace-nowrap font-bold leading-none tracking-tight ${className}`}
         style={{
           fontSize: getFontSize(
             formattedValue,
