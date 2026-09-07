@@ -1,9 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { calculateFD } from "@/lib/fd-calculator";
-import { getCurrency } from "@/lib/currencies";
 import CurrencySelector from "@/components/calculators/CurrencySelector";
+import ResultAmount from "@/components/calculators/ResultAmount";
+import {
+  formatCompactCurrency,
+  formatCurrency,
+} from "@/lib/format-currency";
+import { calculateFD } from "@/lib/fd-calculator";
 
 const COMPOUNDING_OPTIONS = [
   { label: "Monthly", value: 12 },
@@ -24,68 +28,7 @@ type SegmentDetails = {
   amount: number;
   percentage: number;
   colorClass: string;
-  dotClass: string;
 };
-
-function formatCurrency(
-  amount: number,
-  currencyCode: string,
-): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: currencyCode,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  } catch {
-    const currency = getCurrency(currencyCode);
-
-    return `${currency.symbol}${amount.toLocaleString(undefined, {
-      maximumFractionDigits: 2,
-    })}`;
-  }
-}
-
-function formatCompactCurrency(
-  amount: number,
-  currencyCode: string,
-): string {
-  const currency = getCurrency(currencyCode);
-
-  let value = amount;
-  let suffix = "";
-
-  if (currencyCode === "INR") {
-    if (Math.abs(amount) >= 10_000_000) {
-      value = amount / 10_000_000;
-      suffix = "Cr";
-    } else if (Math.abs(amount) >= 100_000) {
-      value = amount / 100_000;
-      suffix = "L";
-    } else if (Math.abs(amount) >= 1_000) {
-      value = amount / 1_000;
-      suffix = "K";
-    }
-  } else {
-    if (Math.abs(amount) >= 1_000_000_000) {
-      value = amount / 1_000_000_000;
-      suffix = "B";
-    } else if (Math.abs(amount) >= 1_000_000) {
-      value = amount / 1_000_000;
-      suffix = "M";
-    } else if (Math.abs(amount) >= 1_000) {
-      value = amount / 1_000;
-      suffix = "K";
-    }
-  }
-
-  const formattedValue = new Intl.NumberFormat(undefined, {
-    maximumFractionDigits:
-      value >= 100 ? 0 : value >= 10 ? 1 : 2,
-  }).format(value);
-
-  return `${currency.symbol}${formattedValue}${suffix}`;
-}
 
 function hasValidValues(
   principal: string,
@@ -161,29 +104,20 @@ function InteractiveDonut({
   const principalEndAngle =
     principalPercentage * 3.6;
 
-  const getSegmentDetails = (
-    segment: DonutSegment,
-  ): SegmentDetails => {
-    if (segment === "interest") {
-      return {
-        label: "Interest",
-        amount: interestAmount,
-        percentage: interestPercentage,
-        colorClass: "text-amber-300",
-        dotClass: "bg-amber-400",
-      };
-    }
-
-    return {
-      label: "Principal",
-      amount: principalAmount,
-      percentage: principalPercentage,
-      colorClass: "text-indigo-300",
-      dotClass: "bg-indigo-300",
-    };
-  };
-
-  const selectedSegment = getSegmentDetails(activeSegment);
+  const selectedSegment: SegmentDetails =
+    activeSegment === "interest"
+      ? {
+          label: "Interest",
+          amount: interestAmount,
+          percentage: interestPercentage,
+          colorClass: "text-amber-300",
+        }
+      : {
+          label: "Principal",
+          amount: principalAmount,
+          percentage: principalPercentage,
+          colorClass: "text-indigo-300",
+        };
 
   return (
     <div className="relative mx-auto mt-7 flex h-44 w-44 items-center justify-center">
@@ -216,9 +150,9 @@ function InteractiveDonut({
             className="cursor-pointer transition-all duration-200"
             style={{
               opacity:
-                activeSegment !== "principal"
-                  ? 0.5
-                  : 1,
+                activeSegment === "principal"
+                  ? 1
+                  : 0.5,
               filter:
                 activeSegment === "principal"
                   ? "drop-shadow(0 0 7px rgba(165,180,252,0.45))"
@@ -243,9 +177,9 @@ function InteractiveDonut({
             className="cursor-pointer transition-all duration-200"
             style={{
               opacity:
-                activeSegment !== "interest"
-                  ? 0.5
-                  : 1,
+                activeSegment === "interest"
+                  ? 1
+                  : 0.5,
               filter:
                 activeSegment === "interest"
                   ? "drop-shadow(0 0 7px rgba(251,191,36,0.45))"
@@ -284,9 +218,13 @@ export default function FDCalculator() {
   const [principal, setPrincipal] = useState("");
   const [rate, setRate] = useState("");
   const [tenure, setTenure] = useState("");
-  const [compounding, setCompounding] = useState("4");
-  const [currency, setCurrency] = useState<string | null>(null);
+  const [compounding, setCompounding] =
+    useState("4");
+  const [currency, setCurrency] =
+    useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [activeSegment, setActiveSegment] =
+    useState<DonutSegment>("principal");
 
   const isValid = hasValidValues(
     principal,
@@ -303,7 +241,8 @@ export default function FDCalculator() {
       principal: Number(principal),
       annualRate: Number(rate),
       tenureYears: Number(tenure),
-      compoundingFrequency: Number(compounding),
+      compoundingFrequency:
+        Number(compounding),
     });
   }, [
     principal,
@@ -325,9 +264,6 @@ export default function FDCalculator() {
       ? (result.interest / result.maturity) * 100
       : 0;
 
-  const [activeSegment, setActiveSegment] =
-    useState<DonutSegment>("principal");
-
   const resetCalculator = () => {
     setPrincipal("");
     setRate("");
@@ -348,7 +284,9 @@ export default function FDCalculator() {
     );
 
     try {
-      await navigator.clipboard.writeText(formattedValue);
+      await navigator.clipboard.writeText(
+        formattedValue,
+      );
 
       setCopied(true);
 
@@ -358,12 +296,6 @@ export default function FDCalculator() {
     } catch {
       setCopied(false);
     }
-  };
-
-  const selectSegment = (
-    segment: DonutSegment,
-  ) => {
-    setActiveSegment(segment);
   };
 
   return (
@@ -478,14 +410,16 @@ export default function FDCalculator() {
               }
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             >
-              {COMPOUNDING_OPTIONS.map((option) => (
-                <option
-                  key={option.value}
-                  value={option.value}
-                >
-                  {option.label}
-                </option>
-              ))}
+              {COMPOUNDING_OPTIONS.map(
+                (option) => (
+                  <option
+                    key={option.value}
+                    value={option.value}
+                  >
+                    {option.label}
+                  </option>
+                ),
+              )}
             </select>
           </div>
 
@@ -575,7 +509,7 @@ export default function FDCalculator() {
 
           {result ? (
             <div className="relative mt-6 space-y-4">
-              {/* Main value */}
+              {/* Main result */}
               <div className="min-h-[176px] rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
                 <div className="flex items-center justify-between gap-4">
                   <p className="text-sm font-medium text-slate-300">
@@ -587,12 +521,14 @@ export default function FDCalculator() {
                   </span>
                 </div>
 
-                <p className="mt-4 break-words text-4xl font-bold tracking-tight text-white sm:text-5xl">
-                  {formatCurrency(
-                    result.maturity,
-                    activeCurrency,
-                  )}
-                </p>
+                <div className="mt-4 min-w-0">
+                  <ResultAmount
+                    value={result.maturity}
+                    currencyCode={activeCurrency}
+                    size="hero"
+                    className="text-white"
+                  />
+                </div>
 
                 {copied && (
                   <p className="mt-3 text-sm font-medium text-indigo-300">
@@ -635,9 +571,11 @@ export default function FDCalculator() {
                   activeCurrency={
                     activeCurrency
                   }
-                  activeSegment={activeSegment}
+                  activeSegment={
+                    activeSegment
+                  }
                   onSegmentChange={
-                    selectSegment
+                    setActiveSegment
                   }
                 />
 
@@ -645,19 +583,20 @@ export default function FDCalculator() {
                   <button
                     type="button"
                     onClick={() =>
-                      selectSegment(
+                      setActiveSegment(
                         "principal",
                       )
                     }
-                    className={`min-h-12 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-400/20 ${
-                      activeSegment === "principal"
-                        ? "border-indigo-300/30 bg-indigo-300/10"
-                        : "border-white/8 bg-black/10 hover:border-indigo-300/20 hover:bg-indigo-300/5"
-                    }`}
                     aria-pressed={
                       activeSegment ===
                       "principal"
                     }
+                    className={`min-h-12 min-w-0 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-400/20 ${
+                      activeSegment ===
+                      "principal"
+                        ? "border-indigo-300/30 bg-indigo-300/10"
+                        : "border-white/8 bg-black/10 hover:border-indigo-300/20 hover:bg-indigo-300/5"
+                    }`}
                   >
                     <div className="flex items-center gap-2">
                       <span
@@ -670,34 +609,40 @@ export default function FDCalculator() {
                       </p>
                     </div>
 
-                    <p className="mt-2 break-words text-base font-semibold text-white">
-                      {formatCurrency(
-                        result.principal,
-                        activeCurrency,
-                      )}
-                    </p>
+                    <div className="mt-2 min-w-0">
+                      <ResultAmount
+                        value={result.principal}
+                        currencyCode={
+                          activeCurrency
+                        }
+                        size="card"
+                        className="text-white"
+                      />
+                    </div>
 
                     <p className="mt-1 text-xs text-slate-500">
-                      {principalPercentage.toFixed(1)}%
-                      {" "}of total
+                      {principalPercentage.toFixed(
+                        1,
+                      )}
+                      % of total
                     </p>
                   </button>
 
                   <button
                     type="button"
                     onClick={() =>
-                      selectSegment(
+                      setActiveSegment(
                         "interest",
                       )
                     }
-                    className={`min-h-12 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-amber-400/20 ${
+                    aria-pressed={
+                      activeSegment === "interest"
+                    }
+                    className={`min-h-12 min-w-0 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-amber-400/20 ${
                       activeSegment === "interest"
                         ? "border-amber-300/30 bg-amber-300/10"
                         : "border-white/8 bg-black/10 hover:border-amber-300/20 hover:bg-amber-300/5"
                     }`}
-                    aria-pressed={
-                      activeSegment === "interest"
-                    }
                   >
                     <div className="flex items-center gap-2">
                       <span
@@ -710,16 +655,22 @@ export default function FDCalculator() {
                       </p>
                     </div>
 
-                    <p className="mt-2 break-words text-base font-semibold text-white">
-                      {formatCurrency(
-                        result.interest,
-                        activeCurrency,
-                      )}
-                    </p>
+                    <div className="mt-2 min-w-0">
+                      <ResultAmount
+                        value={result.interest}
+                        currencyCode={
+                          activeCurrency
+                        }
+                        size="card"
+                        className="text-white"
+                      />
+                    </div>
 
                     <p className="mt-1 text-xs text-slate-500">
-                      {interestPercentage.toFixed(1)}%
-                      {" "}of total
+                      {interestPercentage.toFixed(
+                        1,
+                      )}
+                      % of total
                     </p>
                   </button>
                 </div>

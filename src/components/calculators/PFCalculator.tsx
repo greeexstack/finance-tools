@@ -2,8 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { calculatePF } from "@/lib/pf-calculator";
-import { getCurrency } from "@/lib/currencies";
 import CurrencySelector from "@/components/calculators/CurrencySelector";
+import ResultAmount from "@/components/calculators/ResultAmount";
+import {
+  formatCompactCurrency,
+  formatCurrency,
+} from "@/lib/format-currency";
 
 const SVG_SIZE = 160;
 const SVG_CENTER = SVG_SIZE / 2;
@@ -18,66 +22,6 @@ type SegmentDetails = {
   percentage: number;
   colorClass: string;
 };
-
-function formatCurrency(
-  amount: number,
-  currencyCode: string,
-): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: currencyCode,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  } catch {
-    const currency = getCurrency(currencyCode);
-
-    return `${currency.symbol}${amount.toLocaleString(undefined, {
-      maximumFractionDigits: 2,
-    })}`;
-  }
-}
-
-function formatCompactCurrency(
-  amount: number,
-  currencyCode: string,
-): string {
-  const currency = getCurrency(currencyCode);
-
-  let value = amount;
-  let suffix = "";
-
-  if (currencyCode === "INR") {
-    if (Math.abs(amount) >= 10_000_000) {
-      value = amount / 10_000_000;
-      suffix = "Cr";
-    } else if (Math.abs(amount) >= 100_000) {
-      value = amount / 100_000;
-      suffix = "L";
-    } else if (Math.abs(amount) >= 1_000) {
-      value = amount / 1_000;
-      suffix = "K";
-    }
-  } else {
-    if (Math.abs(amount) >= 1_000_000_000) {
-      value = amount / 1_000_000_000;
-      suffix = "B";
-    } else if (Math.abs(amount) >= 1_000_000) {
-      value = amount / 1_000_000;
-      suffix = "M";
-    } else if (Math.abs(amount) >= 1_000) {
-      value = amount / 1_000;
-      suffix = "K";
-    }
-  }
-
-  const formattedValue = new Intl.NumberFormat(undefined, {
-    maximumFractionDigits:
-      value >= 100 ? 0 : value >= 10 ? 1 : 2,
-  }).format(value);
-
-  return `${currency.symbol}${formattedValue}${suffix}`;
-}
 
 function hasValidValues(
   employeeContribution: string,
@@ -213,7 +157,9 @@ function InteractiveDonut({
                   : undefined,
             }}
             onMouseEnter={() =>
-              onSegmentChange("contributions")
+              onSegmentChange(
+                "contributions",
+              )
             }
           />
         )}
@@ -275,10 +221,12 @@ export default function PFCalculator() {
     useState("");
   const [rate, setRate] = useState("");
   const [tenure, setTenure] = useState("");
-  const [currency, setCurrency] = useState<string | null>(
-    null,
-  );
+  const [currency, setCurrency] =
+    useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  const [activeSegment, setActiveSegment] =
+    useState<DonutSegment>("contributions");
 
   const isValid = hasValidValues(
     employeeContribution,
@@ -323,9 +271,6 @@ export default function PFCalculator() {
           result.maturityAmount) *
         100
       : 0;
-
-  const [activeSegment, setActiveSegment] =
-    useState<DonutSegment>("contributions");
 
   const resetCalculator = () => {
     setEmployeeContribution("");
@@ -583,12 +528,14 @@ export default function PFCalculator() {
                   </span>
                 </div>
 
-                <p className="mt-4 break-words text-4xl font-bold tracking-tight text-white sm:text-5xl">
-                  {formatCurrency(
-                    result.maturityAmount,
-                    activeCurrency,
-                  )}
-                </p>
+                <div className="mt-4 min-w-0">
+                  <ResultAmount
+                    value={result.maturityAmount}
+                    currencyCode={activeCurrency}
+                    size="hero"
+                    className="text-white"
+                  />
+                </div>
 
                 {copied && (
                   <p className="mt-3 text-sm font-medium text-indigo-300">
@@ -628,9 +575,15 @@ export default function PFCalculator() {
                   interestAmount={
                     result.interestEarned
                   }
-                  activeCurrency={activeCurrency}
-                  activeSegment={activeSegment}
-                  onSegmentChange={setActiveSegment}
+                  activeCurrency={
+                    activeCurrency
+                  }
+                  activeSegment={
+                    activeSegment
+                  }
+                  onSegmentChange={
+                    setActiveSegment
+                  }
                 />
 
                 <div className="mt-7 grid gap-3 sm:grid-cols-2">
@@ -641,8 +594,9 @@ export default function PFCalculator() {
                         "contributions",
                       )
                     }
-                    className={`min-h-12 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-400/20 ${
-                      activeSegment === "contributions"
+                    className={`min-h-12 min-w-0 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-400/20 ${
+                      activeSegment ===
+                      "contributions"
                         ? "border-indigo-300/30 bg-indigo-300/10"
                         : "border-white/8 bg-black/10 hover:border-indigo-300/20 hover:bg-indigo-300/5"
                     }`}
@@ -662,12 +616,18 @@ export default function PFCalculator() {
                       </p>
                     </div>
 
-                    <p className="mt-2 break-words text-base font-semibold text-white">
-                      {formatCurrency(
-                        result.totalContributions,
-                        activeCurrency,
-                      )}
-                    </p>
+                    <div className="mt-2 min-w-0">
+                      <ResultAmount
+                        value={
+                          result.totalContributions
+                        }
+                        currencyCode={
+                          activeCurrency
+                        }
+                        size="card"
+                        className="text-white"
+                      />
+                    </div>
 
                     <p className="mt-1 text-xs text-slate-500">
                       {contributionsPercentage.toFixed(
@@ -680,9 +640,11 @@ export default function PFCalculator() {
                   <button
                     type="button"
                     onClick={() =>
-                      setActiveSegment("interest")
+                      setActiveSegment(
+                        "interest",
+                      )
                     }
-                    className={`min-h-12 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-amber-400/20 ${
+                    className={`min-h-12 min-w-0 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-amber-400/20 ${
                       activeSegment === "interest"
                         ? "border-amber-300/30 bg-amber-300/10"
                         : "border-white/8 bg-black/10 hover:border-amber-300/20 hover:bg-amber-300/5"
@@ -702,12 +664,18 @@ export default function PFCalculator() {
                       </p>
                     </div>
 
-                    <p className="mt-2 break-words text-base font-semibold text-white">
-                      {formatCurrency(
-                        result.interestEarned,
-                        activeCurrency,
-                      )}
-                    </p>
+                    <div className="mt-2 min-w-0">
+                      <ResultAmount
+                        value={
+                          result.interestEarned
+                        }
+                        currencyCode={
+                          activeCurrency
+                        }
+                        size="card"
+                        className="text-white"
+                      />
+                    </div>
 
                     <p className="mt-1 text-xs text-slate-500">
                       {interestPercentage.toFixed(

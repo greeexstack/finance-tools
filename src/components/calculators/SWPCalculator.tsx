@@ -2,27 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { calculateSWP } from "@/lib/swp-calculator";
-import { getCurrency } from "@/lib/currencies";
 import CurrencySelector from "@/components/calculators/CurrencySelector";
-
-function formatCurrency(
-  amount: number,
-  currencyCode: string,
-): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: currencyCode,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  } catch {
-    const currency = getCurrency(currencyCode);
-
-    return `${currency.symbol}${amount.toLocaleString(undefined, {
-      maximumFractionDigits: 2,
-    })}`;
-  }
-}
+import ResultAmount from "@/components/calculators/ResultAmount";
+import { formatCurrency } from "@/lib/format-currency";
 
 function hasValidValues(
   initialInvestment: string,
@@ -73,7 +55,8 @@ function OutcomeBar({
   const withdrawnShare =
     totalReference > 0
       ? Math.min(
-          (totalWithdrawn / totalReference) * 100,
+          (totalWithdrawn / totalReference) *
+            100,
           100,
         )
       : 0;
@@ -81,7 +64,8 @@ function OutcomeBar({
   const remainingShare =
     totalReference > 0
       ? Math.min(
-          (remainingValue / totalReference) * 100,
+          (remainingValue / totalReference) *
+            100,
           100,
         )
       : 0;
@@ -110,7 +94,8 @@ function OutcomeBar({
     },
   };
 
-  const selected = details[activeOutcome];
+  const selected =
+    details[activeOutcome];
 
   return (
     <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
@@ -198,12 +183,14 @@ function OutcomeBar({
             </span>
           </div>
 
-          <p className="mt-2 break-words text-base font-semibold text-white sm:text-lg">
-            {formatCurrency(
-              remainingValue,
-              activeCurrency,
-            )}
-          </p>
+          <div className="mt-2 min-w-0">
+            <ResultAmount
+              value={remainingValue}
+              currencyCode={activeCurrency}
+              size="card"
+              className="text-white"
+            />
+          </div>
         </button>
 
         <button
@@ -231,12 +218,14 @@ function OutcomeBar({
             </span>
           </div>
 
-          <p className="mt-2 break-words text-base font-semibold text-white sm:text-lg">
-            {formatCurrency(
-              totalWithdrawn,
-              activeCurrency,
-            )}
-          </p>
+          <div className="mt-2 min-w-0">
+            <ResultAmount
+              value={totalWithdrawn}
+              currencyCode={activeCurrency}
+              size="card"
+              className="text-white"
+            />
+          </div>
         </button>
 
         <button
@@ -256,7 +245,9 @@ function OutcomeBar({
               ? totalGrowth >= 0
                 ? "border-emerald-300/30 bg-emerald-300/10"
                 : "border-rose-300/30 bg-rose-300/10"
-              : "border-white/8 bg-black/10 hover:border-emerald-300/20 hover:bg-emerald-300/5"
+              : totalGrowth >= 0
+                ? "border-white/8 bg-black/10 hover:border-emerald-300/20 hover:bg-emerald-300/5"
+                : "border-white/8 bg-black/10 hover:border-rose-300/20 hover:bg-rose-300/5"
           }`}
         >
           <div className="flex items-center gap-2">
@@ -273,19 +264,19 @@ function OutcomeBar({
             </span>
           </div>
 
-          <div className="mt-2 flex flex-wrap items-baseline justify-between gap-2">
-            <p
-              className={`break-words text-base font-semibold sm:text-lg ${
-                totalGrowth >= 0
-                  ? "text-white"
-                  : "text-rose-300"
-              }`}
-            >
-              {formatCurrency(
-                totalGrowth,
-                activeCurrency,
-              )}
-            </p>
+          <div className="mt-2 flex min-w-0 flex-wrap items-baseline justify-between gap-2">
+            <div className="min-w-0">
+              <ResultAmount
+                value={totalGrowth}
+                currencyCode={activeCurrency}
+                size="card"
+                className={
+                  totalGrowth >= 0
+                    ? "text-white"
+                    : "text-rose-300"
+                }
+              />
+            </div>
 
             <span
               className={`text-xs font-medium ${
@@ -312,9 +303,8 @@ export default function SWPCalculator() {
     useState("");
   const [rate, setRate] = useState("");
   const [tenure, setTenure] = useState("");
-  const [currency, setCurrency] = useState<
-    string | null
-  >(null);
+  const [currency, setCurrency] =
+    useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [activeOutcome, setActiveOutcome] =
     useState<OutcomeKey>("remaining");
@@ -332,8 +322,10 @@ export default function SWPCalculator() {
     }
 
     return calculateSWP({
-      initialInvestment: Number(initialInvestment),
-      monthlyWithdrawal: Number(monthlyWithdrawal),
+      initialInvestment:
+        Number(initialInvestment),
+      monthlyWithdrawal:
+        Number(monthlyWithdrawal),
       annualRate: Number(rate),
       tenureYears: Number(tenure),
     });
@@ -582,7 +574,6 @@ export default function SWPCalculator() {
                       height="10"
                       rx="2"
                     />
-
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                   </svg>
                 )}
@@ -604,12 +595,14 @@ export default function SWPCalculator() {
                   </span>
                 </div>
 
-                <p className="mt-4 break-words text-4xl font-bold tracking-tight text-white sm:text-5xl">
-                  {formatCurrency(
-                    result.remainingValue,
-                    activeCurrency,
-                  )}
-                </p>
+                <div className="mt-4 min-w-0">
+                  <ResultAmount
+                    value={result.remainingValue}
+                    currencyCode={activeCurrency}
+                    size="hero"
+                    className="text-white"
+                  />
+                </div>
 
                 {copied && (
                   <p className="mt-3 text-sm font-medium text-indigo-300">
@@ -628,7 +621,9 @@ export default function SWPCalculator() {
                 remainingValue={
                   result.remainingValue
                 }
-                totalGrowth={result.totalGrowth}
+                totalGrowth={
+                  result.totalGrowth
+                }
                 activeOutcome={activeOutcome}
                 onOutcomeChange={
                   setActiveOutcome

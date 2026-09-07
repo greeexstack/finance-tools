@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import CurrencySelector from "@/components/calculators/CurrencySelector";
+import ResultAmount from "@/components/calculators/ResultAmount";
+import { formatCurrency } from "@/lib/format-currency";
 import {
   detectDefaultCurrency,
   saveCurrencyPreference,
@@ -15,22 +17,14 @@ type ExchangeRateResponse = {
   error?: string;
 };
 
-function formatAmount(value: number, currencyCode: string) {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: currencyCode,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
 function formatRate(value: number) {
-  return new Intl.NumberFormat(undefined, {
+  return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 6,
   }).format(value);
 }
 
 function formatRateDate(date: string) {
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -40,17 +34,27 @@ function formatRateDate(date: string) {
 export default function CurrencyConverter() {
   const [amount, setAmount] = useState("");
 
-  const [fromCurrency, setFromCurrency] = useState<string | null>(null);
-  const [toCurrency, setToCurrency] = useState<string | null>(null);
+  const [fromCurrency, setFromCurrency] = useState<
+    string | null
+  >(null);
+  const [toCurrency, setToCurrency] = useState<
+    string | null
+  >(null);
 
-  const [rate, setRate] = useState<number | null>(null);
-  const [rateDate, setRateDate] = useState<string | null>(null);
+  const [rate, setRate] = useState<number | null>(
+    null,
+  );
+  const [rateDate, setRateDate] = useState<
+    string | null
+  >(null);
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] =
+    useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const defaultCurrency = detectDefaultCurrency();
+    const defaultCurrency =
+      detectDefaultCurrency();
 
     setFromCurrency(defaultCurrency);
 
@@ -59,7 +63,9 @@ export default function CurrencyConverter() {
         return currentCurrency;
       }
 
-      return defaultCurrency === "USD" ? "INR" : "USD";
+      return defaultCurrency === "USD"
+        ? "INR"
+        : "USD";
     });
   }, []);
 
@@ -76,7 +82,10 @@ export default function CurrencyConverter() {
 
     const parsed = Number(amount);
 
-    if (!Number.isFinite(parsed) || parsed < 0) {
+    if (
+      !Number.isFinite(parsed) ||
+      parsed < 0
+    ) {
       return null;
     }
 
@@ -84,8 +93,9 @@ export default function CurrencyConverter() {
   }, [amount]);
 
   /*
-   * Fetch the exchange rate only when the selected currencies change.
-   * The amount does not affect the exchange rate.
+   * Fetch the exchange rate only when the selected
+   * currencies change. The amount does not affect
+   * the exchange rate.
    */
   useEffect(() => {
     const from = fromCurrency;
@@ -107,7 +117,8 @@ export default function CurrencyConverter() {
       return;
     }
 
-    const controller = new AbortController();
+    const controller =
+      new AbortController();
 
     async function loadRate(
       sourceCurrency: string,
@@ -120,7 +131,9 @@ export default function CurrencyConverter() {
         const response = await fetch(
           `/api/exchange-rate?from=${encodeURIComponent(
             sourceCurrency,
-          )}&to=${encodeURIComponent(targetCurrency)}`,
+          )}&to=${encodeURIComponent(
+            targetCurrency,
+          )}`,
           {
             signal: controller.signal,
           },
@@ -135,7 +148,8 @@ export default function CurrencyConverter() {
           !Number.isFinite(data.rate)
         ) {
           throw new Error(
-            data.error ?? "Unable to fetch exchange rate.",
+            data.error ??
+              "Unable to fetch exchange rate.",
           );
         }
 
@@ -158,7 +172,9 @@ export default function CurrencyConverter() {
             : "Unable to fetch exchange rate.",
         );
       } finally {
-        if (!controller.signal.aborted) {
+        if (
+          !controller.signal.aborted
+        ) {
           setIsLoading(false);
         }
       }
@@ -172,7 +188,8 @@ export default function CurrencyConverter() {
   }, [fromCurrency, toCurrency]);
 
   const convertedAmount =
-    numericAmount !== null && rate !== null
+    numericAmount !== null &&
+    rate !== null
       ? numericAmount * rate
       : null;
 
@@ -200,9 +217,13 @@ export default function CurrencyConverter() {
             step="any"
             inputMode="decimal"
             value={amount}
-            onChange={(event) => setAmount(event.target.value)}
+            onChange={(event) =>
+              setAmount(
+                event.target.value,
+              )
+            }
             placeholder="Enter amount"
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+            className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
           />
         </div>
 
@@ -218,7 +239,7 @@ export default function CurrencyConverter() {
             type="button"
             onClick={handleSwap}
             aria-label="Swap currencies"
-            className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+            className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
           >
             <svg
               viewBox="0 0 24 24"
@@ -245,35 +266,54 @@ export default function CurrencyConverter() {
         </div>
 
         {/* Result */}
-        <div className="rounded-2xl bg-slate-50 p-5 sm:p-6">
+        <div className="min-w-0 rounded-2xl bg-slate-50 p-5 sm:p-6">
           <p className="text-sm font-medium text-slate-500">
             Converted amount
           </p>
 
           {isLoading ? (
-            <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-              Loading...
-            </p>
+            <div
+              className="mt-3 flex min-h-[58px] items-center"
+              aria-live="polite"
+            >
+              <div
+                className="h-8 w-36 animate-pulse rounded-lg bg-slate-200"
+                aria-hidden="true"
+              />
+
+              <span className="sr-only">
+                Loading exchange rate
+              </span>
+            </div>
           ) : error ? (
             <p className="mt-2 text-lg font-semibold text-red-600">
               Unable to convert
             </p>
-          ) : convertedAmount !== null && toCurrency ? (
+          ) : convertedAmount !== null &&
+            toCurrency ? (
             <>
-              <p className="mt-2 break-words text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-                {formatAmount(convertedAmount, toCurrency)}
-              </p>
+              <div className="mt-3 min-w-0">
+                <ResultAmount
+                  value={convertedAmount}
+                  currencyCode={toCurrency}
+                  size="hero"
+                  className="text-slate-900"
+                />
+              </div>
 
-              {fromCurrency && rate !== null && (
-                <p className="mt-3 text-sm leading-6 text-slate-500">
-                  1 {fromCurrency} = {formatRate(rate)}{" "}
-                  {toCurrency}
-                </p>
-              )}
+              {fromCurrency &&
+                rate !== null && (
+                  <p className="mt-3 text-sm leading-6 text-slate-500">
+                    1 {fromCurrency} ={" "}
+                    {formatRate(rate)}{" "}
+                    {toCurrency}
+                  </p>
+                )}
 
               {rateDate && (
                 <p className="mt-1 text-xs text-slate-400">
-                  Rate date: {formatRateDate(rateDate)}
+                  Rate date:{" "}
+                  {formatRateDate(rateDate)}
                 </p>
               )}
             </>
