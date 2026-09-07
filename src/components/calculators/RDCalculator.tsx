@@ -45,8 +45,12 @@ function polarToCartesian(
     ((angleInDegrees - 90) * Math.PI) / 180;
 
   return {
-    x: centerX + radius * Math.cos(angleInRadians),
-    y: centerY + radius * Math.sin(angleInRadians),
+    x:
+      centerX +
+      radius * Math.cos(angleInRadians),
+    y:
+      centerY +
+      radius * Math.sin(angleInRadians),
   };
 }
 
@@ -69,7 +73,9 @@ function describeArc(
   );
 
   const largeArcFlag =
-    endAngle - startAngle <= 180 ? "0" : "1";
+    endAngle - startAngle <= 180
+      ? "0"
+      : "1";
 
   return [
     `M ${start.x} ${start.y}`,
@@ -92,7 +98,9 @@ function InteractiveDonut({
   interestAmount: number;
   activeCurrency: string;
   activeSegment: DonutSegment;
-  onSegmentChange: (segment: DonutSegment) => void;
+  onSegmentChange: (
+    segment: DonutSegment,
+  ) => void;
 }) {
   const depositedEndAngle =
     depositedPercentage * 3.6;
@@ -102,14 +110,18 @@ function InteractiveDonut({
       ? {
           label: "Interest",
           amount: interestAmount,
-          percentage: interestPercentage,
-          colorClass: "text-amber-300",
+          percentage:
+            interestPercentage,
+          colorClass:
+            "text-amber-300",
         }
       : {
           label: "Total Deposited",
           amount: depositedAmount,
-          percentage: depositedPercentage,
-          colorClass: "text-indigo-300",
+          percentage:
+            depositedPercentage,
+          colorClass:
+            "text-indigo-300",
         };
 
   return (
@@ -130,7 +142,9 @@ function InteractiveDonut({
           r={SVG_RADIUS}
           fill="none"
           stroke="rgba(255,255,255,0.06)"
-          strokeWidth={SVG_STROKE_WIDTH}
+          strokeWidth={
+            SVG_STROKE_WIDTH
+          }
         />
 
         {depositedPercentage > 0 && (
@@ -141,21 +155,27 @@ function InteractiveDonut({
             )}
             fill="none"
             stroke="#a5b4fc"
-            strokeWidth={SVG_STROKE_WIDTH}
+            strokeWidth={
+              SVG_STROKE_WIDTH
+            }
             strokeLinecap="round"
             className="cursor-pointer transition-all duration-200"
             style={{
               opacity:
-                activeSegment === "deposited"
+                activeSegment ===
+                "deposited"
                   ? 1
                   : 0.5,
               filter:
-                activeSegment === "deposited"
+                activeSegment ===
+                "deposited"
                   ? "drop-shadow(0 0 7px rgba(165,180,252,0.45))"
                   : undefined,
             }}
             onMouseEnter={() =>
-              onSegmentChange("deposited")
+              onSegmentChange(
+                "deposited",
+              )
             }
           />
         )}
@@ -168,21 +188,27 @@ function InteractiveDonut({
             )}
             fill="none"
             stroke="#fbbf24"
-            strokeWidth={SVG_STROKE_WIDTH}
+            strokeWidth={
+              SVG_STROKE_WIDTH
+            }
             strokeLinecap="round"
             className="cursor-pointer transition-all duration-200"
             style={{
               opacity:
-                activeSegment === "interest"
+                activeSegment ===
+                "interest"
                   ? 1
                   : 0.5,
               filter:
-                activeSegment === "interest"
+                activeSegment ===
+                "interest"
                   ? "drop-shadow(0 0 7px rgba(251,191,36,0.45))"
                   : undefined,
             }}
             onMouseEnter={() =>
-              onSegmentChange("interest")
+              onSegmentChange(
+                "interest",
+              )
             }
           />
         )}
@@ -203,7 +229,10 @@ function InteractiveDonut({
         </span>
 
         <span className="mt-1 text-[10px] font-medium text-slate-500">
-          {selectedSegment.percentage.toFixed(1)}%
+          {selectedSegment.percentage.toFixed(
+            1,
+          )}
+          %
         </span>
       </div>
     </div>
@@ -214,18 +243,22 @@ export default function RDCalculator() {
   const [monthlyDeposit, setMonthlyDeposit] =
     useState("");
 
-  const [rate, setRate] = useState("");
+  const [rate, setRate] =
+    useState("");
 
-  const [tenure, setTenure] = useState("");
+  const [tenure, setTenure] =
+    useState("");
 
-  const [currency, setCurrency] = useState<
-    string | null
-  >(null);
+  const [currency, setCurrency] =
+    useState<string | null>(null);
 
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] =
+    useState(false);
 
   const [activeSegment, setActiveSegment] =
-    useState<DonutSegment>("deposited");
+    useState<DonutSegment>(
+      "deposited",
+    );
 
   const isValid = hasValidValues(
     monthlyDeposit,
@@ -239,7 +272,8 @@ export default function RDCalculator() {
     }
 
     return calculateRD({
-      monthlyDeposit: Number(monthlyDeposit),
+      monthlyDeposit:
+        Number(monthlyDeposit),
       annualRate: Number(rate),
       tenureMonths: Number(tenure),
     });
@@ -250,17 +284,20 @@ export default function RDCalculator() {
     isValid,
   ]);
 
-  const activeCurrency = currency ?? "INR";
+  const activeCurrency =
+    currency ?? "INR";
 
   const depositedPercentage =
-    result && result.maturityAmount > 0
+    result &&
+    result.maturityAmount > 0
       ? (result.totalDeposited /
           result.maturityAmount) *
         100
       : 0;
 
   const interestPercentage =
-    result && result.maturityAmount > 0
+    result &&
+    result.maturityAmount > 0
       ? (result.interestEarned /
           result.maturityAmount) *
         100
@@ -271,33 +308,37 @@ export default function RDCalculator() {
     setRate("");
     setTenure("");
     setCopied(false);
-    setActiveSegment("deposited");
-  };
-
-  const copyMaturityAmount = async () => {
-    if (!result) {
-      return;
-    }
-
-    const formattedValue = formatCurrency(
-      result.maturityAmount,
-      activeCurrency,
+    setActiveSegment(
+      "deposited",
     );
-
-    try {
-      await navigator.clipboard.writeText(
-        formattedValue,
-      );
-
-      setCopied(true);
-
-      window.setTimeout(() => {
-        setCopied(false);
-      }, 1800);
-    } catch {
-      setCopied(false);
-    }
   };
+
+  const copyMaturityAmount =
+    async () => {
+      if (!result) {
+        return;
+      }
+
+      const formattedValue =
+        formatCurrency(
+          result.maturityAmount,
+          activeCurrency,
+        );
+
+      try {
+        await navigator.clipboard.writeText(
+          formattedValue,
+        );
+
+        setCopied(true);
+
+        window.setTimeout(() => {
+          setCopied(false);
+        }, 1800);
+      } catch {
+        setCopied(false);
+      }
+    };
 
   return (
     <div className="grid min-w-0 gap-6 lg:grid-cols-2 lg:items-start">
@@ -367,7 +408,9 @@ export default function RDCalculator() {
               inputMode="decimal"
               value={rate}
               onChange={(e) =>
-                setRate(e.target.value)
+                setRate(
+                  e.target.value,
+                )
               }
               placeholder="Enter rate"
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
@@ -390,7 +433,9 @@ export default function RDCalculator() {
               inputMode="numeric"
               value={tenure}
               onChange={(e) =>
-                setTenure(e.target.value)
+                setTenure(
+                  e.target.value,
+                )
               }
               placeholder="Enter months"
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
@@ -399,7 +444,9 @@ export default function RDCalculator() {
 
           <button
             type="button"
-            onClick={resetCalculator}
+            onClick={
+              resetCalculator
+            }
             className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 hover:shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
           >
             Reset
@@ -421,74 +468,26 @@ export default function RDCalculator() {
 
         <div className="relative min-w-0">
           {/* Result header */}
-          <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 w-full">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-300">
-                Result
-              </p>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-300">
+              Result
+            </p>
 
-              <h2 className="mt-2 text-xl font-semibold tracking-tight text-white sm:text-2xl">
-                Your RD result
-              </h2>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight text-white sm:text-2xl">
+              Your RD result
+            </h2>
 
-              <p className="mt-1.5 text-sm leading-6 text-slate-400">
-                Estimated based on the values you entered.
-              </p>
-            </div>
-
-            {result && (
-              <button
-                type="button"
-                onClick={copyMaturityAmount}
-                aria-label="Copy maturity amount"
-                title="Copy maturity amount"
-                className="inline-flex min-h-12 w-full shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.07] text-slate-200 backdrop-blur transition-all duration-200 hover:scale-[1.02] hover:border-white/20 hover:bg-white/[0.12] hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20 sm:w-12"
-              >
-                {copied ? (
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-5 w-5"
-                    aria-hidden="true"
-                  >
-                    <path d="m5 12 4 4L19 6" />
-                  </svg>
-                ) : (
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-5 w-5"
-                    aria-hidden="true"
-                  >
-                    <rect
-                      x="9"
-                      y="9"
-                      width="10"
-                      height="10"
-                      rx="2"
-                    />
-
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                )}
-              </button>
-            )}
+            <p className="mt-1.5 text-sm leading-6 text-slate-400">
+              Estimated based on the values you entered.
+            </p>
           </div>
 
           {result ? (
             <div className="relative mt-6 min-w-0 space-y-4">
               {/* Main value */}
-              <div className="min-w-0 min-h-[176px] rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-sm font-medium text-slate-300">
+              <div className="relative min-w-0 min-h-[176px] rounded-2xl border border-white/10 bg-white/[0.07] p-5 pb-16 backdrop-blur-sm sm:p-6 sm:pb-16">
+                <div className="flex min-w-0 items-center justify-between gap-4">
+                  <p className="min-w-0 text-sm font-medium text-slate-300">
                     Maturity Amount
                   </p>
 
@@ -510,16 +509,63 @@ export default function RDCalculator() {
                   />
                 </div>
 
+                {/* Copy action */}
+                <button
+                  type="button"
+                  onClick={
+                    copyMaturityAmount
+                  }
+                  aria-label="Copy maturity amount"
+                  title="Copy maturity amount"
+                  className="absolute bottom-4 right-4 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.07] text-slate-300 backdrop-blur transition-all duration-200 hover:scale-[1.03] hover:border-white/20 hover:bg-white/[0.12] hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20"
+                >
+                  {copied ? (
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-5 w-5"
+                      aria-hidden="true"
+                    >
+                      <path d="m5 12 4 4L19 6" />
+                    </svg>
+                  ) : (
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-5 w-5"
+                      aria-hidden="true"
+                    >
+                      <rect
+                        x="9"
+                        y="9"
+                        width="10"
+                        height="10"
+                        rx="2"
+                      />
+
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  )}
+                </button>
+
                 {copied && (
-                  <p className="mt-3 text-sm font-medium text-indigo-300">
-                    Copied to clipboard
+                  <p className="absolute bottom-5 right-16 text-xs font-medium text-indigo-300">
+                    Copied
                   </p>
                 )}
               </div>
 
               {/* Breakdown */}
               <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex min-w-0 items-start justify-between gap-4">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-slate-200">
                       Investment breakdown
@@ -530,8 +576,11 @@ export default function RDCalculator() {
                     </p>
                   </div>
 
-                  <span className="shrink-0 rounded-full bg-amber-400/10 px-2.5 py-1 text-xs font-semibold text-amber-300">
-                    {interestPercentage.toFixed(1)}% interest
+                  <span className="shrink-0 whitespace-nowrap rounded-full bg-amber-400/10 px-2.5 py-1 text-xs font-semibold text-amber-300">
+                    {interestPercentage.toFixed(
+                      1,
+                    )}
+                    % interest
                   </span>
                 </div>
 
@@ -584,12 +633,12 @@ export default function RDCalculator() {
                         className="h-2.5 w-2.5 shrink-0 rounded-full bg-indigo-300 shadow-[0_0_8px_rgba(165,180,252,0.45)]"
                       />
 
-                      <p className="text-xs font-medium text-slate-400">
+                      <p className="min-w-0 text-xs font-medium text-slate-400">
                         Total Deposited
                       </p>
                     </div>
 
-                    <div className="mt-2 min-w-0">
+                    <div className="mt-2 min-w-0 w-full">
                       <ResultAmount
                         value={
                           result.totalDeposited
@@ -632,12 +681,12 @@ export default function RDCalculator() {
                         className="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.45)]"
                       />
 
-                      <p className="text-xs font-medium text-slate-400">
+                      <p className="min-w-0 text-xs font-medium text-slate-400">
                         Interest
                       </p>
                     </div>
 
-                    <div className="mt-2 min-w-0">
+                    <div className="mt-2 min-w-0 w-full">
                       <ResultAmount
                         value={
                           result.interestEarned

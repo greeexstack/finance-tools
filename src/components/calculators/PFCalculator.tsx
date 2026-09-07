@@ -531,77 +531,27 @@ export default function PFCalculator() {
 
         <div className="relative min-w-0">
           {/* Result header */}
-          <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-300">
-                Result
-              </p>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-300">
+              Result
+            </p>
 
-              <h2 className="mt-2 text-xl font-semibold tracking-tight text-white sm:text-2xl">
-                Your EPF result
-              </h2>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight text-white sm:text-2xl">
+              Your EPF result
+            </h2>
 
-              <p className="mt-1.5 text-sm leading-6 text-slate-400">
-                Estimated based on the
-                values you entered.
-              </p>
-            </div>
-
-            {result && (
-              <button
-                type="button"
-                onClick={
-                  copyMaturityAmount
-                }
-                aria-label="Copy estimated EPF value"
-                title="Copy estimated EPF value"
-                className="inline-flex min-h-12 w-full shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.07] text-slate-200 backdrop-blur transition-all duration-200 hover:scale-[1.02] hover:border-white/20 hover:bg-white/[0.12] hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20 sm:w-12"
-              >
-                {copied ? (
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-5 w-5"
-                    aria-hidden="true"
-                  >
-                    <path d="m5 12 4 4L19 6" />
-                  </svg>
-                ) : (
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-5 w-5"
-                    aria-hidden="true"
-                  >
-                    <rect
-                      x="9"
-                      y="9"
-                      width="10"
-                      height="10"
-                      rx="2"
-                    />
-
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                )}
-              </button>
-            )}
+            <p className="mt-1.5 text-sm leading-6 text-slate-400">
+              Estimated based on the
+              values you entered.
+            </p>
           </div>
 
           {result ? (
             <div className="relative mt-6 min-w-0 space-y-4">
               {/* Main value */}
-              <div className="min-w-0 min-h-[176px] rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-sm font-medium text-slate-300">
+              <div className="relative min-w-0 min-h-[176px] rounded-2xl border border-white/10 bg-white/[0.07] p-5 pb-16 backdrop-blur-sm sm:p-6 sm:pb-16">
+                <div className="flex min-w-0 items-center justify-between gap-4">
+                  <p className="min-w-0 text-sm font-medium text-slate-300">
                     Estimated EPF
                     Value
                   </p>
@@ -624,16 +574,63 @@ export default function PFCalculator() {
                   />
                 </div>
 
+                {/* Copy action */}
+                <button
+                  type="button"
+                  onClick={
+                    copyMaturityAmount
+                  }
+                  aria-label="Copy estimated EPF value"
+                  title="Copy estimated EPF value"
+                  className="absolute bottom-4 right-4 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.07] text-slate-300 backdrop-blur transition-all duration-200 hover:scale-[1.03] hover:border-white/20 hover:bg-white/[0.12] hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20"
+                >
+                  {copied ? (
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-5 w-5"
+                      aria-hidden="true"
+                    >
+                      <path d="m5 12 4 4L19 6" />
+                    </svg>
+                  ) : (
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-5 w-5"
+                      aria-hidden="true"
+                    >
+                      <rect
+                        x="9"
+                        y="9"
+                        width="10"
+                        height="10"
+                        rx="2"
+                      />
+
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  )}
+                </button>
+
                 {copied && (
-                  <p className="mt-3 text-sm font-medium text-indigo-300">
-                    Copied to clipboard
+                  <p className="absolute bottom-5 right-16 text-xs font-medium text-indigo-300">
+                    Copied
                   </p>
                 )}
               </div>
 
               {/* Breakdown */}
               <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
-                <div className="flex min-w-0 items-start justify-between gap-4">
+                <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-slate-200">
                       Investment breakdown

@@ -178,7 +178,7 @@ function OutcomeBar({
               className="h-2.5 w-2.5 shrink-0 rounded-full bg-indigo-300 shadow-[0_0_8px_rgba(165,180,252,0.45)]"
             />
 
-            <span className="text-xs font-medium text-slate-400">
+            <span className="min-w-0 text-xs font-medium text-slate-400">
               Remaining Value
             </span>
           </div>
@@ -213,7 +213,7 @@ function OutcomeBar({
               className="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.45)]"
             />
 
-            <span className="text-xs font-medium text-slate-400">
+            <span className="min-w-0 text-xs font-medium text-slate-400">
               Total Withdrawn
             </span>
           </div>
@@ -259,7 +259,7 @@ function OutcomeBar({
               }`}
             />
 
-            <span className="text-xs font-medium text-slate-400">
+            <span className="min-w-0 text-xs font-medium text-slate-400">
               Net Growth
             </span>
           </div>
@@ -297,20 +297,27 @@ function OutcomeBar({
 }
 
 export default function SWPCalculator() {
-  const [initialInvestment, setInitialInvestment] =
+  const [
+    initialInvestment,
+    setInitialInvestment,
+  ] = useState("");
+
+  const [
+    monthlyWithdrawal,
+    setMonthlyWithdrawal,
+  ] = useState("");
+
+  const [rate, setRate] =
     useState("");
 
-  const [monthlyWithdrawal, setMonthlyWithdrawal] =
+  const [tenure, setTenure] =
     useState("");
-
-  const [rate, setRate] = useState("");
-
-  const [tenure, setTenure] = useState("");
 
   const [currency, setCurrency] =
     useState<string | null>(null);
 
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] =
+    useState(false);
 
   const [activeOutcome, setActiveOutcome] =
     useState<OutcomeKey>("remaining");
@@ -343,7 +350,8 @@ export default function SWPCalculator() {
     isValid,
   ]);
 
-  const activeCurrency = currency ?? "INR";
+  const activeCurrency =
+    currency ?? "INR";
 
   const resetCalculator = () => {
     setInitialInvestment("");
@@ -351,33 +359,37 @@ export default function SWPCalculator() {
     setRate("");
     setTenure("");
     setCopied(false);
-    setActiveOutcome("remaining");
-  };
-
-  const copyRemainingValue = async () => {
-    if (!result) {
-      return;
-    }
-
-    const formattedValue = formatCurrency(
-      result.remainingValue,
-      activeCurrency,
+    setActiveOutcome(
+      "remaining",
     );
-
-    try {
-      await navigator.clipboard.writeText(
-        formattedValue,
-      );
-
-      setCopied(true);
-
-      window.setTimeout(() => {
-        setCopied(false);
-      }, 1800);
-    } catch {
-      setCopied(false);
-    }
   };
+
+  const copyRemainingValue =
+    async () => {
+      if (!result) {
+        return;
+      }
+
+      const formattedValue =
+        formatCurrency(
+          result.remainingValue,
+          activeCurrency,
+        );
+
+      try {
+        await navigator.clipboard.writeText(
+          formattedValue,
+        );
+
+        setCopied(true);
+
+        window.setTimeout(() => {
+          setCopied(false);
+        }, 1800);
+      } catch {
+        setCopied(false);
+      }
+    };
 
   return (
     <div className="grid min-w-0 gap-6 lg:grid-cols-2 lg:items-start">
@@ -496,7 +508,9 @@ export default function SWPCalculator() {
               inputMode="decimal"
               value={tenure}
               onChange={(e) =>
-                setTenure(e.target.value)
+                setTenure(
+                  e.target.value,
+                )
               }
               placeholder="Enter years"
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
@@ -505,7 +519,9 @@ export default function SWPCalculator() {
 
           <button
             type="button"
-            onClick={resetCalculator}
+            onClick={
+              resetCalculator
+            }
             className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 hover:shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
           >
             Reset
@@ -527,74 +543,26 @@ export default function SWPCalculator() {
 
         <div className="relative min-w-0">
           {/* Result header */}
-          <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 w-full">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-300">
-                Result
-              </p>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-300">
+              Result
+            </p>
 
-              <h2 className="mt-2 text-xl font-semibold tracking-tight text-white sm:text-2xl">
-                Your SWP result
-              </h2>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight text-white sm:text-2xl">
+              Your SWP result
+            </h2>
 
-              <p className="mt-1.5 text-sm leading-6 text-slate-400">
-                Estimated based on the values you entered.
-              </p>
-            </div>
-
-            {result && (
-              <button
-                type="button"
-                onClick={copyRemainingValue}
-                aria-label="Copy remaining value"
-                title="Copy remaining value"
-                className="inline-flex min-h-12 w-full shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.07] text-slate-200 backdrop-blur transition-all duration-200 hover:scale-[1.02] hover:border-white/20 hover:bg-white/[0.12] hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20 sm:w-12"
-              >
-                {copied ? (
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-5 w-5"
-                    aria-hidden="true"
-                  >
-                    <path d="m5 12 4 4L19 6" />
-                  </svg>
-                ) : (
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-5 w-5"
-                    aria-hidden="true"
-                  >
-                    <rect
-                      x="9"
-                      y="9"
-                      width="10"
-                      height="10"
-                      rx="2"
-                    />
-
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                )}
-              </button>
-            )}
+            <p className="mt-1.5 text-sm leading-6 text-slate-400">
+              Estimated based on the values you entered.
+            </p>
           </div>
 
           {result ? (
             <div className="relative mt-6 min-w-0 space-y-4">
               {/* Main value */}
-              <div className="min-w-0 min-h-[176px] rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-sm font-medium text-slate-300">
+              <div className="relative min-w-0 min-h-[176px] rounded-2xl border border-white/10 bg-white/[0.07] p-5 pb-16 backdrop-blur-sm sm:p-6 sm:pb-16">
+                <div className="flex min-w-0 items-center justify-between gap-4">
+                  <p className="min-w-0 text-sm font-medium text-slate-300">
                     Remaining Value
                   </p>
 
@@ -605,16 +573,67 @@ export default function SWPCalculator() {
 
                 <div className="mt-4 min-w-0 w-full">
                   <ResultAmount
-                    value={result.remainingValue}
-                    currencyCode={activeCurrency}
+                    value={
+                      result.remainingValue
+                    }
+                    currencyCode={
+                      activeCurrency
+                    }
                     size="hero"
                     className="text-white"
                   />
                 </div>
 
+                {/* Copy action */}
+                <button
+                  type="button"
+                  onClick={
+                    copyRemainingValue
+                  }
+                  aria-label="Copy remaining value"
+                  title="Copy remaining value"
+                  className="absolute bottom-4 right-4 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.07] text-slate-300 backdrop-blur transition-all duration-200 hover:scale-[1.03] hover:border-white/20 hover:bg-white/[0.12] hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20"
+                >
+                  {copied ? (
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-5 w-5"
+                      aria-hidden="true"
+                    >
+                      <path d="m5 12 4 4L19 6" />
+                    </svg>
+                  ) : (
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-5 w-5"
+                      aria-hidden="true"
+                    >
+                      <rect
+                        x="9"
+                        y="9"
+                        width="10"
+                        height="10"
+                        rx="2"
+                      />
+
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  )}
+                </button>
+
                 {copied && (
-                  <p className="mt-3 text-sm font-medium text-indigo-300">
-                    Copied to clipboard
+                  <p className="absolute bottom-5 right-16 text-xs font-medium text-indigo-300">
+                    Copied
                   </p>
                 )}
               </div>
@@ -636,7 +655,9 @@ export default function SWPCalculator() {
                 onOutcomeChange={
                   setActiveOutcome
                 }
-                activeCurrency={activeCurrency}
+                activeCurrency={
+                  activeCurrency
+                }
               />
             </div>
           ) : (

@@ -391,89 +391,56 @@ export default function PPFCalculator() {
         ) : (
           <div className="min-w-0 p-5 sm:p-6">
             {/* Main result */}
-            <div className="min-w-0 rounded-3xl border border-white/10 bg-white/[0.04] p-5 sm:p-6">
-              <div className="flex min-w-0 items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-400">
-                    Estimated PPF Value
-                  </p>
+            <div className="relative min-w-0 rounded-3xl border border-white/10 bg-white/[0.04] p-5 pb-16 sm:p-6 sm:pb-16">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-slate-400">
+                  Estimated PPF Value
+                </p>
 
-                  <div className="mt-3 min-w-0 w-full">
-                    <ResultAmount
-                      value={result.maturityAmount}
-                      currencyCode={currencyCode}
-                      size="hero"
-                      className="text-white"
-                    />
-                  </div>
-
-                  <p className="mt-2 text-xs text-slate-400">
-                    After {result.tenureYears} years at{" "}
-                    {result.annualRate}%
-                  </p>
+                <div className="mt-3 min-w-0 w-full">
+                  <ResultAmount
+                    value={result.maturityAmount}
+                    currencyCode={currencyCode}
+                    size="hero"
+                    className="text-white"
+                  />
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleCopyResult}
-                  aria-label="Copy PPF estimate"
-                  title="Copy PPF estimate"
-                  className="hidden shrink-0 rounded-xl border border-white/10 bg-white/5 p-2.5 text-slate-300 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20 sm:inline-flex"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                    aria-hidden="true"
-                  >
-                    <rect
-                      x="9"
-                      y="9"
-                      width="10"
-                      height="10"
-                      rx="2"
-                    />
-
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                </button>
+                <p className="mt-2 text-xs text-slate-400">
+                  After {result.tenureYears} years at{" "}
+                  {result.annualRate}%
+                </p>
               </div>
 
-              {/* Mobile copy button */}
-              <div className="mt-4 flex justify-end sm:hidden">
-                <button
-                  type="button"
-                  onClick={handleCopyResult}
-                  aria-label="Copy PPF estimate"
-                  title="Copy PPF estimate"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20"
+              {/* Copy action */}
+              <button
+                type="button"
+                onClick={handleCopyResult}
+                aria-label="Copy PPF estimate"
+                title="Copy PPF estimate"
+                className="absolute bottom-4 right-4 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                  aria-hidden="true"
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                    aria-hidden="true"
-                  >
-                    <rect
-                      x="9"
-                      y="9"
-                      width="10"
-                      height="10"
-                      rx="2"
-                    />
+                  <rect
+                    x="9"
+                    y="9"
+                    width="10"
+                    height="10"
+                    rx="2"
+                  />
 
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                </button>
-              </div>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
             </div>
 
             {/* Visualization */}
