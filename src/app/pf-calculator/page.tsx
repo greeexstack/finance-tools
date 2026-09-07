@@ -3,9 +3,9 @@ import CalculatorPage from "@/components/calculators/CalculatorPage";
 import PFCalculator from "@/components/calculators/PFCalculator";
 
 export const metadata: Metadata = {
-  title: "PF Calculator",
+  title: "EPF Calculator — India",
   description:
-    "Estimate your provident fund value, total contributions, and interest earned using your monthly contributions, interest rate, and tenure.",
+    "Estimate your Employees' Provident Fund (EPF) value, total contributions, and interest earned using monthly employee and employer contributions, annual interest rate, and tenure.",
   alternates: {
     canonical: "/pf-calculator",
   },
@@ -14,10 +14,10 @@ export const metadata: Metadata = {
 export default function PFCalculatorPage() {
   return (
     <CalculatorPage
-      eyebrow="Finance Calculator"
-      title="PF Calculator"
-      description="Estimate your provident fund value based on your monthly employee and employer contributions, annual interest rate, and tenure."
-      infoTitle="How the PF calculation works"
+      eyebrow="India • Employees' Provident Fund"
+      title="EPF Calculator"
+      description="Estimate your EPF value based on your monthly employee and employer contributions, annual interest rate, and tenure."
+      infoTitle="How the EPF calculation works"
       infoContent={
         <>
           <p>
@@ -27,13 +27,14 @@ export default function PFCalculatorPage() {
           </p>
 
           <p className="mt-4">
-            Actual provident fund calculations can differ because of
-            applicable rules, contribution limits, interest-crediting methods,
-            and other factors.
+            Actual EPF results can differ because applicable contribution
+            rules, interest-crediting methods, eligible components, and
+            account-specific factors may affect the final amount.
           </p>
 
           <p className="mt-4 text-sm text-slate-500">
-            Use the result as an estimate rather than financial advice.
+            This is an estimate for planning purposes, not an official EPFO
+            account statement or financial advice.
           </p>
         </>
       }
