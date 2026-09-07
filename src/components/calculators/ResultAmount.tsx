@@ -20,18 +20,19 @@ function getFontSize(
     if (length <= 20) return "0.9375rem";
     if (length <= 24) return "0.875rem";
     if (length <= 28) return "0.8125rem";
-    return "0.75rem";
+    if (length <= 32) return "0.75rem";
+    return "0.6875rem";
   }
 
-  if (length <= 10) return "3rem";
-  if (length <= 13) return "2.75rem";
-  if (length <= 16) return "2.45rem";
-  if (length <= 20) return "2.15rem";
-  if (length <= 24) return "1.9rem";
-  if (length <= 28) return "1.65rem";
-  if (length <= 32) return "1.4rem";
-  if (length <= 36) return "1.2rem";
-  return "1.05rem";
+  if (length <= 10) return "2.75rem";
+  if (length <= 13) return "2.25rem";
+  if (length <= 16) return "1.85rem";
+  if (length <= 20) return "1.6rem";
+  if (length <= 24) return "1.4rem";
+  if (length <= 28) return "1.2rem";
+  if (length <= 32) return "1.05rem";
+  if (length <= 36) return "0.95rem";
+  return "0.875rem";
 }
 
 export default function ResultAmount({

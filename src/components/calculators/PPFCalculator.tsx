@@ -17,35 +17,42 @@ type Timing = "before5th" | "after5th";
 const TENURE_OPTIONS = [15, 20, 25, 30];
 
 function getInitialAmount(frequency: Frequency) {
-  return frequency === "yearly" ? 150_000 : 12_500;
+  return frequency === "yearly"
+    ? 150_000
+    : 12_500;
 }
 
 export default function PPFCalculator() {
-  const [contributionFrequency, setContributionFrequency] =
-    useState<Frequency>("yearly");
+  const [
+    contributionFrequency,
+    setContributionFrequency,
+  ] = useState<Frequency>("yearly");
 
-  const [contributionAmount, setContributionAmount] =
-    useState("150000");
+  const [
+    contributionAmount,
+    setContributionAmount,
+  ] = useState("150000");
 
-  const [contributionTiming, setContributionTiming] =
-    useState<Timing>("before5th");
+  const [
+    contributionTiming,
+    setContributionTiming,
+  ] = useState<Timing>("before5th");
 
   const [annualRate, setAnnualRate] =
     useState(String(DEFAULT_RATE));
 
-  const [tenureYears, setTenureYears] = useState("15");
+  const [tenureYears, setTenureYears] =
+    useState("15");
 
-  const [currencyCode, setCurrencyCode] = useState("INR");
+  const [currencyCode, setCurrencyCode] =
+    useState("INR");
 
   const result = useMemo(() => {
-    const amount = Number(contributionAmount);
-    const rate = Number(annualRate);
-    const tenure = Number(tenureYears);
-
     return calculatePPF({
-      contributionAmount: amount,
-      annualRate: rate,
-      tenureYears: tenure,
+      contributionAmount:
+        Number(contributionAmount),
+      annualRate: Number(annualRate),
+      tenureYears: Number(tenureYears),
       contributionFrequency,
       contributionTiming,
     });
@@ -67,9 +74,14 @@ export default function PPFCalculator() {
       ? "₹500 to ₹1,50,000 per financial year."
       : "Monthly deposits are modeled across the year.";
 
-  const totalValue = result?.maturityAmount ?? 0;
-  const contributions = result?.totalContributions ?? 0;
-  const interest = result?.interestEarned ?? 0;
+  const totalValue =
+    result?.maturityAmount ?? 0;
+
+  const contributions =
+    result?.totalContributions ?? 0;
+
+  const interest =
+    result?.interestEarned ?? 0;
 
   const contributionsShare =
     totalValue > 0
@@ -81,20 +93,28 @@ export default function PPFCalculator() {
       ? (interest / totalValue) * 100
       : 0;
 
-  const circumference = 2 * Math.PI * 44;
+  const circumference =
+    2 * Math.PI * 44;
 
   const contributionDash =
-    (contributionsShare / 100) * circumference;
+    (contributionsShare / 100) *
+    circumference;
 
   const interestDash =
-    (interestShare / 100) * circumference;
+    (interestShare / 100) *
+    circumference;
 
   function handleFrequencyChange(
     nextFrequency: Frequency,
   ) {
-    setContributionFrequency(nextFrequency);
+    setContributionFrequency(
+      nextFrequency,
+    );
+
     setContributionAmount(
-      String(getInitialAmount(nextFrequency)),
+      String(
+        getInitialAmount(nextFrequency),
+      ),
     );
   }
 
@@ -131,16 +151,18 @@ export default function PPFCalculator() {
     ].join("\n");
 
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(
+        text,
+      );
     } catch {
-      // Clipboard access may be unavailable in some browsers.
+      // Clipboard access may be unavailable.
     }
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]">
+    <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]">
       {/* Input panel */}
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <section className="min-w-0 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="mb-6">
           <p className="mb-2 text-sm font-semibold text-indigo-600">
             PPF Calculator
@@ -157,7 +179,6 @@ export default function PPFCalculator() {
         </div>
 
         <div className="space-y-5">
-          {/* Contribution frequency */}
           <div>
             <label
               htmlFor="ppf-frequency"
@@ -186,7 +207,6 @@ export default function PPFCalculator() {
             </select>
           </div>
 
-          {/* Contribution amount */}
           <div>
             <label
               htmlFor="ppf-contribution"
@@ -213,7 +233,8 @@ export default function PPFCalculator() {
                 }
                 className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-9 pr-4 text-base font-semibold text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
                 placeholder={
-                  contributionFrequency === "yearly"
+                  contributionFrequency ===
+                  "yearly"
                     ? "150000"
                     : "12500"
                 }
@@ -225,7 +246,6 @@ export default function PPFCalculator() {
             </p>
           </div>
 
-          {/* Deposit timing */}
           <div>
             <label
               htmlFor="ppf-timing"
@@ -259,7 +279,6 @@ export default function PPFCalculator() {
             </p>
           </div>
 
-          {/* Interest rate */}
           <div>
             <label
               htmlFor="ppf-rate"
@@ -277,7 +296,9 @@ export default function PPFCalculator() {
                 step="0.01"
                 value={annualRate}
                 onChange={(event) =>
-                  setAnnualRate(event.target.value)
+                  setAnnualRate(
+                    event.target.value,
+                  )
                 }
                 className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 pr-10 text-base font-semibold text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
               />
@@ -293,7 +314,6 @@ export default function PPFCalculator() {
             </p>
           </div>
 
-          {/* Tenure */}
           <div>
             <label
               htmlFor="ppf-tenure"
@@ -306,15 +326,22 @@ export default function PPFCalculator() {
               id="ppf-tenure"
               value={tenureYears}
               onChange={(event) =>
-                setTenureYears(event.target.value)
+                setTenureYears(
+                  event.target.value,
+                )
               }
               className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
             >
-              {TENURE_OPTIONS.map((years) => (
-                <option key={years} value={years}>
-                  {years} years
-                </option>
-              ))}
+              {TENURE_OPTIONS.map(
+                (years) => (
+                  <option
+                    key={years}
+                    value={years}
+                  >
+                    {years} years
+                  </option>
+                ),
+              )}
             </select>
 
             <p className="mt-2 text-xs leading-5 text-slate-500">
@@ -323,7 +350,6 @@ export default function PPFCalculator() {
             </p>
           </div>
 
-          {/* Currency */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-800">
               Currency
@@ -335,7 +361,6 @@ export default function PPFCalculator() {
             />
           </div>
 
-          {/* Reset */}
           <button
             type="button"
             onClick={handleReset}
@@ -347,7 +372,7 @@ export default function PPFCalculator() {
       </section>
 
       {/* Result panel */}
-      <section className="overflow-hidden rounded-3xl bg-slate-950 shadow-sm">
+      <section className="min-w-0 overflow-hidden rounded-3xl bg-slate-950 shadow-sm">
         {!result ? (
           <div className="flex min-h-[520px] flex-col items-center justify-center px-6 py-10 text-center sm:px-10">
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-2xl text-white">
@@ -364,39 +389,96 @@ export default function PPFCalculator() {
             </p>
           </div>
         ) : (
-          <div className="p-5 sm:p-6">
-            {/* Result header */}
-            <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0 w-full">
-                <p className="text-sm font-medium text-slate-400">
-                  Estimated PPF Value
-                </p>
+          <div className="min-w-0 p-5 sm:p-6">
+            {/* Main result */}
+            <div className="min-w-0 rounded-3xl border border-white/10 bg-white/[0.04] p-5 sm:p-6">
+              <div className="flex min-w-0 items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-400">
+                    Estimated PPF Value
+                  </p>
 
-                <ResultAmount
-                  value={result.maturityAmount}
-                  currencyCode={currencyCode}
-                  size="hero"
-                  className="mt-3 text-white"
-                />
+                  <div className="mt-3 min-w-0 w-full">
+                    <ResultAmount
+                      value={result.maturityAmount}
+                      currencyCode={currencyCode}
+                      size="hero"
+                      className="text-white"
+                    />
+                  </div>
 
-                <p className="mt-2 text-xs text-slate-400">
-                  After {result.tenureYears} years at{" "}
-                  {result.annualRate}%
-                </p>
+                  <p className="mt-2 text-xs text-slate-400">
+                    After {result.tenureYears} years at{" "}
+                    {result.annualRate}%
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleCopyResult}
+                  aria-label="Copy PPF estimate"
+                  title="Copy PPF estimate"
+                  className="hidden shrink-0 rounded-xl border border-white/10 bg-white/5 p-2.5 text-slate-300 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20 sm:inline-flex"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                    aria-hidden="true"
+                  >
+                    <rect
+                      x="9"
+                      y="9"
+                      width="10"
+                      height="10"
+                      rx="2"
+                    />
+
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={handleCopyResult}
-                className="w-full shrink-0 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10 sm:w-auto"
-              >
-                Copy
-              </button>
+              {/* Mobile copy button */}
+              <div className="mt-4 flex justify-end sm:hidden">
+                <button
+                  type="button"
+                  onClick={handleCopyResult}
+                  aria-label="Copy PPF estimate"
+                  title="Copy PPF estimate"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                    aria-hidden="true"
+                  >
+                    <rect
+                      x="9"
+                      y="9"
+                      width="10"
+                      height="10"
+                      rx="2"
+                    />
+
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             {/* Visualization */}
-            <div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-              <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
+            <div className="mt-5 min-w-0 rounded-3xl border border-white/10 bg-white/[0.04] p-5 sm:p-6">
+              <div className="flex min-w-0 flex-col items-center gap-6 sm:flex-row sm:items-center">
                 <div className="relative h-44 w-44 shrink-0">
                   <svg
                     viewBox="0 0 100 100"
@@ -413,7 +495,8 @@ export default function PPFCalculator() {
                       strokeWidth="10"
                     />
 
-                    {contributionsShare > 0 && (
+                    {contributionsShare >
+                      0 && (
                       <circle
                         cx="50"
                         cy="50"
@@ -455,51 +538,67 @@ export default function PPFCalculator() {
                   </div>
                 </div>
 
-                <div className="w-full space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-indigo-500" />
+                <div className="min-w-0 w-full space-y-4">
+                  <div className="min-w-0">
+                    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                      <div className="min-w-0 flex items-start gap-2">
+                        <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-indigo-500" />
 
-                        <span className="text-sm font-medium text-slate-300">
+                        <span className="min-w-0 text-sm font-medium leading-5 text-slate-300">
                           Total Contributions
                         </span>
                       </div>
 
-                      <span className="text-xs font-semibold text-slate-500">
-                        {contributionsShare.toFixed(1)}%
+                      <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-slate-500">
+                        {contributionsShare.toFixed(
+                          1,
+                        )}
+                        %
                       </span>
                     </div>
 
-                    <ResultAmount
-                      value={result.totalContributions}
-                      currencyCode={currencyCode}
-                      size="card"
-                      className="mt-2 text-white"
-                    />
+                    <div className="mt-2 min-w-0">
+                      <ResultAmount
+                        value={
+                          result.totalContributions
+                        }
+                        currencyCode={
+                          currencyCode
+                        }
+                        size="card"
+                        className="text-white"
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                  <div className="min-w-0">
+                    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                      <div className="min-w-0 flex items-start gap-2">
+                        <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-amber-500" />
 
-                        <span className="text-sm font-medium text-slate-300">
+                        <span className="min-w-0 text-sm font-medium leading-5 text-slate-300">
                           Interest Earned
                         </span>
                       </div>
 
-                      <span className="text-xs font-semibold text-slate-500">
-                        {interestShare.toFixed(1)}%
+                      <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-slate-500">
+                        {interestShare.toFixed(1)}
+                        %
                       </span>
                     </div>
 
-                    <ResultAmount
-                      value={result.interestEarned}
-                      currencyCode={currencyCode}
-                      size="card"
-                      className="mt-2 text-white"
-                    />
+                    <div className="mt-2 min-w-0">
+                      <ResultAmount
+                        value={
+                          result.interestEarned
+                        }
+                        currencyCode={
+                          currencyCode
+                        }
+                        size="card"
+                        className="text-white"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -538,12 +637,11 @@ export default function PPFCalculator() {
               </p>
 
               <p className="mt-1 text-xs leading-5 text-slate-400">
-                This calculator uses a simplified PPF model based
-                on your contribution pattern, timing, planning
-                rate, and tenure. Actual PPF returns can differ
-                because government rates, deposit dates,
-                withdrawals, and account history can affect the
-                final amount.
+                This calculator uses a simplified PPF model based on your
+                contribution pattern, timing, planning rate, and tenure.
+                Actual PPF returns can differ because government rates,
+                deposit dates, withdrawals, and account history can affect
+                the final amount.
               </p>
             </div>
           </div>
