@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
-import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
   title: "Finance Tools",
   description:
-    "Simple finance calculators for savings, investments, deposits, and everyday financial calculations.",
+    "Simple, fast, and practical finance calculators for everyday financial planning.",
 };
 
 export default function RootLayout({
@@ -16,12 +17,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-slate-50 text-slate-900">
+      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
         <SiteHeader />
 
         {children}
 
         <SiteFooter />
+
+        <Analytics />
       </body>
     </html>
   );
