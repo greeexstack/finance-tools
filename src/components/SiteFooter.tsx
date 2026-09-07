@@ -3,9 +3,22 @@ import Link from "next/link";
 const calculatorLinks = [
   { name: "FD Calculator", href: "/fd-calculator" },
   { name: "RD Calculator", href: "/rd-calculator" },
-  { name: "PF Calculator", href: "/pf-calculator" },
-  { name: "SWP Calculator", href: "/swp-calculator" },
-  { name: "Currency Converter", href: "/currency-converter" },
+  {
+    name: "SWP Calculator",
+    href: "/swp-calculator",
+  },
+  {
+    name: "EPF Calculator — India",
+    href: "/pf-calculator",
+  },
+  {
+    name: "PPF Calculator — India",
+    href: "/ppf-calculator",
+  },
+  {
+    name: "Currency Converter",
+    href: "/currency-converter",
+  },
 ];
 
 export default function SiteFooter() {
@@ -51,7 +64,11 @@ export default function SiteFooter() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="text-sm text-slate-400 transition hover:text-white"
+                    className={`text-sm transition hover:text-white ${
+                      item.name.includes("India")
+                        ? "text-slate-500"
+                        : "text-slate-400"
+                    }`}
                   >
                     {item.name}
                   </Link>

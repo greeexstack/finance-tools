@@ -7,9 +7,19 @@ const navigation = [
   { name: "Home", href: "/" },
   { name: "FD", href: "/fd-calculator" },
   { name: "RD", href: "/rd-calculator" },
-  { name: "PF", href: "/pf-calculator" },
   { name: "SWP", href: "/swp-calculator" },
-  { name: "Currency", href: "/currency-converter" },
+  {
+    name: "EPF — India",
+    href: "/pf-calculator",
+  },
+  {
+    name: "PPF — India",
+    href: "/ppf-calculator",
+  },
+  {
+    name: "Currency",
+    href: "/currency-converter",
+  },
 ];
 
 export default function SiteHeader() {
@@ -53,13 +63,17 @@ export default function SiteHeader() {
 
           <nav
             aria-label="Main navigation"
-            className="hidden items-center gap-1.5 sm:flex"
+            className="hidden items-center gap-1 sm:flex"
           >
             {navigation.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                className={`rounded-xl px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-indigo-500/30 ${
+                  item.name.includes("India")
+                    ? "text-slate-500 hover:bg-indigo-50 hover:text-indigo-700"
+                    : "text-slate-600 hover:bg-indigo-50 hover:text-indigo-700"
+                }`}
               >
                 {item.name}
               </Link>
@@ -70,7 +84,9 @@ export default function SiteHeader() {
             type="button"
             onClick={() => setIsMenuOpen((open) => !open)}
             className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 sm:hidden"
-            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            aria-label={
+              isMenuOpen ? "Close menu" : "Open menu"
+            }
             aria-expanded={isMenuOpen}
             aria-controls="mobile-navigation"
           >
@@ -123,17 +139,19 @@ export default function SiteHeader() {
                   onClick={() => setIsMenuOpen(false)}
                   className="rounded-xl px-3 py-3 text-sm font-medium text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                 >
-                  {item.name === "Currency"
-                    ? "Currency Converter"
-                    : item.name === "FD"
+                  {item.href === "/"
+                    ? "Home"
+                    : item.href === "/fd-calculator"
                       ? "FD Calculator"
-                      : item.name === "RD"
+                      : item.href === "/rd-calculator"
                         ? "RD Calculator"
-                        : item.name === "PF"
-                          ? "PF Calculator"
-                          : item.name === "SWP"
-                            ? "SWP Calculator"
-                            : "Home"}
+                        : item.href === "/swp-calculator"
+                          ? "SWP Calculator"
+                          : item.href === "/pf-calculator"
+                            ? "EPF Calculator — India"
+                            : item.href === "/ppf-calculator"
+                              ? "PPF Calculator — India"
+                              : "Currency Converter"}
                 </Link>
               ))}
             </div>
