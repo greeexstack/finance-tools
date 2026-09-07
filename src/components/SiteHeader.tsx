@@ -9,6 +9,7 @@ const navigation = [
   { name: "RD", href: "/rd-calculator" },
   { name: "PF", href: "/pf-calculator" },
   { name: "SWP", href: "/swp-calculator" },
+  { name: "Currency", href: "/currency-converter" },
 ];
 
 export default function SiteHeader() {
@@ -32,7 +33,6 @@ export default function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="flex min-h-16 items-center justify-between gap-4">
-          {/* Brand */}
           <Link
             href="/"
             className="group flex min-w-0 shrink-0 items-center gap-2.5"
@@ -51,7 +51,6 @@ export default function SiteHeader() {
             </span>
           </Link>
 
-          {/* Desktop navigation */}
           <nav
             aria-label="Main navigation"
             className="hidden items-center gap-1.5 sm:flex"
@@ -67,7 +66,6 @@ export default function SiteHeader() {
             ))}
           </nav>
 
-          {/* Mobile menu button */}
           <button
             type="button"
             onClick={() => setIsMenuOpen((open) => !open)}
@@ -111,7 +109,6 @@ export default function SiteHeader() {
           </button>
         </div>
 
-        {/* Mobile navigation */}
         {isMenuOpen && (
           <nav
             id="mobile-navigation"
@@ -126,15 +123,17 @@ export default function SiteHeader() {
                   onClick={() => setIsMenuOpen(false)}
                   className="rounded-xl px-3 py-3 text-sm font-medium text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                 >
-                  {item.name === "FD"
-                    ? "FD Calculator"
-                    : item.name === "RD"
-                      ? "RD Calculator"
-                      : item.name === "PF"
-                        ? "PF Calculator"
-                        : item.name === "SWP"
-                          ? "SWP Calculator"
-                          : "Home"}
+                  {item.name === "Currency"
+                    ? "Currency Converter"
+                    : item.name === "FD"
+                      ? "FD Calculator"
+                      : item.name === "RD"
+                        ? "RD Calculator"
+                        : item.name === "PF"
+                          ? "PF Calculator"
+                          : item.name === "SWP"
+                            ? "SWP Calculator"
+                            : "Home"}
                 </Link>
               ))}
             </div>
