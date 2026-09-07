@@ -31,28 +31,48 @@ function formatCurrency(
   }
 }
 
+function hasValidValues(
+  principal: string,
+  rate: string,
+  tenure: string,
+): boolean {
+  return (
+    Number(principal) > 0 &&
+    Number(rate) >= 0 &&
+    Number(tenure) > 0
+  );
+}
+
 export default function FDCalculator() {
-  const [principal, setPrincipal] = useState("100000");
-  const [rate, setRate] = useState("7");
-  const [tenure, setTenure] = useState("5");
+  const [principal, setPrincipal] = useState("");
+  const [rate, setRate] = useState("");
+  const [tenure, setTenure] = useState("");
   const [compounding, setCompounding] = useState("4");
   const [currency, setCurrency] = useState<string | null>(null);
 
+  const isValid = hasValidValues(principal, rate, tenure);
+
   const result = useMemo(() => {
+    if (!isValid) {
+      return null;
+    }
+
     return calculateFD({
       principal: Number(principal),
       annualRate: Number(rate),
       tenureYears: Number(tenure),
       compoundingFrequency: Number(compounding),
     });
-  }, [principal, rate, tenure, compounding]);
+  }, [principal, rate, tenure, compounding, isValid]);
 
   const resetCalculator = () => {
-    setPrincipal("100000");
-    setRate("7");
-    setTenure("5");
+    setPrincipal("");
+    setRate("");
+    setTenure("");
     setCompounding("4");
   };
+
+  const activeCurrency = currency ?? "INR";
 
   return (
     <div className="grid min-w-0 gap-6 lg:grid-cols-2">
@@ -81,8 +101,8 @@ export default function FDCalculator() {
               min="1"
               value={principal}
               onChange={(e) => setPrincipal(e.target.value)}
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="100000"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="Enter amount"
             />
           </div>
 
@@ -101,8 +121,8 @@ export default function FDCalculator() {
               step="0.01"
               value={rate}
               onChange={(e) => setRate(e.target.value)}
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="7"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="Enter rate"
             />
           </div>
 
@@ -121,8 +141,8 @@ export default function FDCalculator() {
               step="0.01"
               value={tenure}
               onChange={(e) => setTenure(e.target.value)}
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="5"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="Enter years"
             />
           </div>
 
@@ -138,10 +158,13 @@ export default function FDCalculator() {
               id="fd-compounding"
               value={compounding}
               onChange={(e) => setCompounding(e.target.value)}
-              className="w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              className="w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
             >
               {COMPOUNDING_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
+                <option
+                  key={option.value}
+                  value={option.value}
+                >
                   {option.label}
                 </option>
               ))}
@@ -173,7 +196,7 @@ export default function FDCalculator() {
               <p className="mt-2 break-words text-3xl font-bold">
                 {formatCurrency(
                   result.maturity,
-                  currency ?? "INR",
+                  activeCurrency,
                 )}
               </p>
             </div>
@@ -187,7 +210,7 @@ export default function FDCalculator() {
                 <p className="mt-1 break-words text-lg font-semibold">
                   {formatCurrency(
                     result.principal,
-                    currency ?? "INR",
+                    activeCurrency,
                   )}
                 </p>
               </div>
@@ -200,7 +223,7 @@ export default function FDCalculator() {
                 <p className="mt-1 break-words text-lg font-semibold">
                   {formatCurrency(
                     result.interest,
-                    currency ?? "INR",
+                    activeCurrency,
                   )}
                 </p>
               </div>
@@ -208,7 +231,8 @@ export default function FDCalculator() {
           </div>
         ) : (
           <div className="mt-6 rounded-xl bg-white/10 p-5 text-slate-300">
-            Enter valid values to calculate your maturity amount.
+            Enter your FD details to see your estimated maturity
+            amount.
           </div>
         )}
       </div>

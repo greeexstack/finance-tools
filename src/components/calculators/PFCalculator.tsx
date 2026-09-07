@@ -24,16 +24,41 @@ function formatCurrency(
   }
 }
 
+function hasValidValues(
+  employeeContribution: string,
+  employerContribution: string,
+  rate: string,
+  tenure: string,
+): boolean {
+  return (
+    Number(employeeContribution) >= 0 &&
+    Number(employerContribution) >= 0 &&
+    Number(rate) >= 0 &&
+    Number(tenure) > 0
+  );
+}
+
 export default function PFCalculator() {
   const [employeeContribution, setEmployeeContribution] =
-    useState("1800");
+    useState("");
   const [employerContribution, setEmployerContribution] =
-    useState("1800");
-  const [rate, setRate] = useState("8.25");
-  const [tenure, setTenure] = useState("20");
+    useState("");
+  const [rate, setRate] = useState("");
+  const [tenure, setTenure] = useState("");
   const [currency, setCurrency] = useState<string | null>(null);
 
+  const isValid = hasValidValues(
+    employeeContribution,
+    employerContribution,
+    rate,
+    tenure,
+  );
+
   const result = useMemo(() => {
+    if (!isValid) {
+      return null;
+    }
+
     return calculatePF({
       monthlyEmployeeContribution: Number(employeeContribution),
       monthlyEmployerContribution: Number(employerContribution),
@@ -45,14 +70,17 @@ export default function PFCalculator() {
     employerContribution,
     rate,
     tenure,
+    isValid,
   ]);
 
   const resetCalculator = () => {
-    setEmployeeContribution("1800");
-    setEmployerContribution("1800");
-    setRate("8.25");
-    setTenure("20");
+    setEmployeeContribution("");
+    setEmployerContribution("");
+    setRate("");
+    setTenure("");
   };
+
+  const activeCurrency = currency ?? "INR";
 
   return (
     <div className="grid min-w-0 gap-6 lg:grid-cols-2">
@@ -83,8 +111,8 @@ export default function PFCalculator() {
               onChange={(e) =>
                 setEmployeeContribution(e.target.value)
               }
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="1800"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="Enter amount"
             />
           </div>
 
@@ -104,8 +132,8 @@ export default function PFCalculator() {
               onChange={(e) =>
                 setEmployerContribution(e.target.value)
               }
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="1800"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="Enter amount"
             />
           </div>
 
@@ -124,8 +152,8 @@ export default function PFCalculator() {
               step="0.01"
               value={rate}
               onChange={(e) => setRate(e.target.value)}
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="8.25"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="Enter rate"
             />
           </div>
 
@@ -144,8 +172,8 @@ export default function PFCalculator() {
               step="0.01"
               value={tenure}
               onChange={(e) => setTenure(e.target.value)}
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="20"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="Enter years"
             />
           </div>
 
@@ -174,7 +202,7 @@ export default function PFCalculator() {
               <p className="mt-2 break-words text-3xl font-bold">
                 {formatCurrency(
                   result.maturityAmount,
-                  currency ?? "INR",
+                  activeCurrency,
                 )}
               </p>
             </div>
@@ -188,7 +216,7 @@ export default function PFCalculator() {
                 <p className="mt-1 break-words text-lg font-semibold">
                   {formatCurrency(
                     result.totalContributions,
-                    currency ?? "INR",
+                    activeCurrency,
                   )}
                 </p>
               </div>
@@ -201,7 +229,7 @@ export default function PFCalculator() {
                 <p className="mt-1 break-words text-lg font-semibold">
                   {formatCurrency(
                     result.interestEarned,
-                    currency ?? "INR",
+                    activeCurrency,
                   )}
                 </p>
               </div>
@@ -209,7 +237,7 @@ export default function PFCalculator() {
           </div>
         ) : (
           <div className="mt-6 rounded-xl bg-white/10 p-5 text-slate-300">
-            Enter valid values to calculate your estimated PF value.
+            Enter your PF details to see your estimated value.
           </div>
         )}
       </div>

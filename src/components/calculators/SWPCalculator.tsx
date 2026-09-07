@@ -24,16 +24,40 @@ function formatCurrency(
   }
 }
 
+function hasValidValues(
+  initialInvestment: string,
+  monthlyWithdrawal: string,
+  rate: string,
+  tenure: string,
+): boolean {
+  return (
+    Number(initialInvestment) > 0 &&
+    Number(monthlyWithdrawal) >= 0 &&
+    Number(rate) >= 0 &&
+    Number(tenure) > 0
+  );
+}
+
 export default function SWPCalculator() {
-  const [initialInvestment, setInitialInvestment] =
-    useState("1000000");
+  const [initialInvestment, setInitialInvestment] = useState("");
   const [monthlyWithdrawal, setMonthlyWithdrawal] =
-    useState("10000");
-  const [rate, setRate] = useState("10");
-  const [tenure, setTenure] = useState("10");
+    useState("");
+  const [rate, setRate] = useState("");
+  const [tenure, setTenure] = useState("");
   const [currency, setCurrency] = useState<string | null>(null);
 
+  const isValid = hasValidValues(
+    initialInvestment,
+    monthlyWithdrawal,
+    rate,
+    tenure,
+  );
+
   const result = useMemo(() => {
+    if (!isValid) {
+      return null;
+    }
+
     return calculateSWP({
       initialInvestment: Number(initialInvestment),
       monthlyWithdrawal: Number(monthlyWithdrawal),
@@ -45,14 +69,17 @@ export default function SWPCalculator() {
     monthlyWithdrawal,
     rate,
     tenure,
+    isValid,
   ]);
 
   const resetCalculator = () => {
-    setInitialInvestment("1000000");
-    setMonthlyWithdrawal("10000");
-    setRate("10");
-    setTenure("10");
+    setInitialInvestment("");
+    setMonthlyWithdrawal("");
+    setRate("");
+    setTenure("");
   };
+
+  const activeCurrency = currency ?? "INR";
 
   return (
     <div className="grid min-w-0 gap-6 lg:grid-cols-2">
@@ -83,8 +110,8 @@ export default function SWPCalculator() {
               onChange={(e) =>
                 setInitialInvestment(e.target.value)
               }
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="1000000"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="Enter amount"
             />
           </div>
 
@@ -104,8 +131,8 @@ export default function SWPCalculator() {
               onChange={(e) =>
                 setMonthlyWithdrawal(e.target.value)
               }
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="10000"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="Enter amount"
             />
           </div>
 
@@ -124,8 +151,8 @@ export default function SWPCalculator() {
               step="0.01"
               value={rate}
               onChange={(e) => setRate(e.target.value)}
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="10"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="Enter rate"
             />
           </div>
 
@@ -144,8 +171,8 @@ export default function SWPCalculator() {
               step="0.01"
               value={tenure}
               onChange={(e) => setTenure(e.target.value)}
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="10"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="Enter years"
             />
           </div>
 
@@ -174,7 +201,7 @@ export default function SWPCalculator() {
               <p className="mt-2 break-words text-3xl font-bold">
                 {formatCurrency(
                   result.remainingValue,
-                  currency ?? "INR",
+                  activeCurrency,
                 )}
               </p>
             </div>
@@ -188,7 +215,7 @@ export default function SWPCalculator() {
                 <p className="mt-1 break-words text-lg font-semibold">
                   {formatCurrency(
                     result.totalWithdrawn,
-                    currency ?? "INR",
+                    activeCurrency,
                   )}
                 </p>
               </div>
@@ -201,7 +228,7 @@ export default function SWPCalculator() {
                 <p className="mt-1 break-words text-lg font-semibold">
                   {formatCurrency(
                     result.totalGrowth,
-                    currency ?? "INR",
+                    activeCurrency,
                   )}
                 </p>
               </div>
@@ -209,7 +236,7 @@ export default function SWPCalculator() {
           </div>
         ) : (
           <div className="mt-6 rounded-xl bg-white/10 p-5 text-slate-300">
-            Enter valid values to calculate your estimated SWP result.
+            Enter your SWP details to see your estimated result.
           </div>
         )}
       </div>

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -9,14 +12,31 @@ const navigation = [
 ];
 
 export default function SiteHeader() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
-      <div className="mx-auto w-full max-w-6xl px-3 sm:px-6 lg:px-8">
-        <div className="flex min-h-16 items-center justify-between gap-3">
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="flex min-h-16 items-center justify-between gap-4">
           {/* Brand */}
           <Link
             href="/"
-            className="group flex shrink-0 items-center gap-2.5"
+            className="group flex min-w-0 shrink-0 items-center gap-2.5"
+            onClick={() => setIsMenuOpen(false)}
           >
             <span
               aria-hidden="true"
@@ -26,27 +46,100 @@ export default function SiteHeader() {
               <span className="absolute h-2 w-2 rounded-full bg-white" />
             </span>
 
-            <span className="text-[15px] font-bold tracking-tight text-slate-900 sm:text-base">
+            <span className="truncate text-[15px] font-bold tracking-tight text-slate-900 sm:text-base">
               Finance Tools
             </span>
           </Link>
 
-          {/* Navigation */}
+          {/* Desktop navigation */}
           <nav
             aria-label="Main navigation"
-            className="ml-auto flex min-w-0 items-center gap-1 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-1.5 sm:overflow-visible sm:pb-0"
+            className="hidden items-center gap-1.5 sm:flex"
           >
             {navigation.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="shrink-0 rounded-xl px-2.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 sm:px-3"
+                className="rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
               >
                 {item.name}
               </Link>
             ))}
           </nav>
+
+          {/* Mobile menu button */}
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen((open) => !open)}
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 sm:hidden"
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-navigation"
+          >
+            <span className="sr-only">
+              {isMenuOpen ? "Close menu" : "Open menu"}
+            </span>
+
+            {isMenuOpen ? (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                className="h-5 w-5"
+                aria-hidden="true"
+              >
+                <path d="M6 6l12 12" />
+                <path d="M18 6L6 18" />
+              </svg>
+            ) : (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                className="h-5 w-5"
+                aria-hidden="true"
+              >
+                <path d="M4 7h16" />
+                <path d="M4 12h16" />
+                <path d="M4 17h16" />
+              </svg>
+            )}
+          </button>
         </div>
+
+        {/* Mobile navigation */}
+        {isMenuOpen && (
+          <nav
+            id="mobile-navigation"
+            aria-label="Mobile navigation"
+            className="border-t border-slate-100 py-3 sm:hidden"
+          >
+            <div className="grid gap-1">
+              {navigation.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="rounded-xl px-3 py-3 text-sm font-medium text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                >
+                  {item.name === "FD"
+                    ? "FD Calculator"
+                    : item.name === "RD"
+                      ? "RD Calculator"
+                      : item.name === "PF"
+                        ? "PF Calculator"
+                        : item.name === "SWP"
+                          ? "SWP Calculator"
+                          : "Home"}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        )}
       </div>
     </header>
   );

@@ -24,25 +24,49 @@ function formatCurrency(
   }
 }
 
+function hasValidValues(
+  monthlyDeposit: string,
+  rate: string,
+  tenure: string,
+): boolean {
+  return (
+    Number(monthlyDeposit) > 0 &&
+    Number(rate) >= 0 &&
+    Number(tenure) > 0
+  );
+}
+
 export default function RDCalculator() {
-  const [monthlyDeposit, setMonthlyDeposit] = useState("5000");
-  const [rate, setRate] = useState("7");
-  const [tenure, setTenure] = useState("60");
+  const [monthlyDeposit, setMonthlyDeposit] = useState("");
+  const [rate, setRate] = useState("");
+  const [tenure, setTenure] = useState("");
   const [currency, setCurrency] = useState<string | null>(null);
 
+  const isValid = hasValidValues(
+    monthlyDeposit,
+    rate,
+    tenure,
+  );
+
   const result = useMemo(() => {
+    if (!isValid) {
+      return null;
+    }
+
     return calculateRD({
       monthlyDeposit: Number(monthlyDeposit),
       annualRate: Number(rate),
       tenureMonths: Number(tenure),
     });
-  }, [monthlyDeposit, rate, tenure]);
+  }, [monthlyDeposit, rate, tenure, isValid]);
 
   const resetCalculator = () => {
-    setMonthlyDeposit("5000");
-    setRate("7");
-    setTenure("60");
+    setMonthlyDeposit("");
+    setRate("");
+    setTenure("");
   };
+
+  const activeCurrency = currency ?? "INR";
 
   return (
     <div className="grid min-w-0 gap-6 lg:grid-cols-2">
@@ -73,8 +97,8 @@ export default function RDCalculator() {
               onChange={(e) =>
                 setMonthlyDeposit(e.target.value)
               }
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="5000"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="Enter amount"
             />
           </div>
 
@@ -93,8 +117,8 @@ export default function RDCalculator() {
               step="0.01"
               value={rate}
               onChange={(e) => setRate(e.target.value)}
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="7"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="Enter rate"
             />
           </div>
 
@@ -113,8 +137,8 @@ export default function RDCalculator() {
               step="1"
               value={tenure}
               onChange={(e) => setTenure(e.target.value)}
-              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              placeholder="60"
+              className="w-full min-w-0 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="Enter months"
             />
           </div>
 
@@ -143,7 +167,7 @@ export default function RDCalculator() {
               <p className="mt-2 break-words text-3xl font-bold">
                 {formatCurrency(
                   result.maturityAmount,
-                  currency ?? "INR",
+                  activeCurrency,
                 )}
               </p>
             </div>
@@ -157,7 +181,7 @@ export default function RDCalculator() {
                 <p className="mt-1 break-words text-lg font-semibold">
                   {formatCurrency(
                     result.totalDeposited,
-                    currency ?? "INR",
+                    activeCurrency,
                   )}
                 </p>
               </div>
@@ -170,7 +194,7 @@ export default function RDCalculator() {
                 <p className="mt-1 break-words text-lg font-semibold">
                   {formatCurrency(
                     result.interestEarned,
-                    currency ?? "INR",
+                    activeCurrency,
                   )}
                 </p>
               </div>
@@ -178,7 +202,8 @@ export default function RDCalculator() {
           </div>
         ) : (
           <div className="mt-6 rounded-xl bg-white/10 p-5 text-slate-300">
-            Enter valid values to calculate your RD maturity amount.
+            Enter your RD details to see your estimated maturity
+            amount.
           </div>
         )}
       </div>
