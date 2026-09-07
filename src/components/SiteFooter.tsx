@@ -21,34 +21,39 @@ const calculatorLinks = [
 
 export default function SiteFooter() {
   return (
-    <footer className="mt-16 border-t border-slate-200 bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+    <footer className="mt-12 border-t border-slate-200 bg-white sm:mt-16">
+      <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-[1.3fr_0.7fr_1fr] lg:gap-12">
+          {/* Brand */}
           <div>
             <Link
               href="/"
-              className="text-lg font-bold tracking-tight text-slate-900"
+              className="inline-block text-lg font-bold tracking-tight text-slate-900"
             >
               Finance Tools
             </Link>
 
             <p className="mt-3 max-w-sm text-sm leading-6 text-slate-500">
-              Simple calculators for everyday savings, investments,
-              deposits, and financial planning.
+              Simple calculators for savings, investments, deposits,
+              withdrawals, and everyday financial planning.
             </p>
           </div>
 
+          {/* Calculators */}
           <div>
             <h2 className="text-sm font-semibold text-slate-900">
               Calculators
             </h2>
 
-            <nav className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
+            <nav
+              aria-label="Calculator links"
+              className="mt-3 grid grid-cols-1 gap-y-1.5"
+            >
               {calculatorLinks.map((calculator) => (
                 <Link
                   key={calculator.href}
                   href={calculator.href}
-                  className="transition hover:text-slate-900"
+                  className="w-fit py-0.5 text-sm text-slate-600 transition hover:text-slate-900"
                 >
                   {calculator.name}
                 </Link>
@@ -56,23 +61,27 @@ export default function SiteFooter() {
             </nav>
           </div>
 
+          {/* About */}
           <div>
             <h2 className="text-sm font-semibold text-slate-900">
               Finance Tools
             </h2>
 
             <p className="mt-3 text-sm leading-6 text-slate-500">
-              Use these calculators to get quick estimates based on the
-              values you enter. Results can vary depending on the
-              assumptions and calculation methods used.
+              These tools provide quick estimates based on the information
+              entered by the user. Actual results may differ depending on
+              product terms, applicable rules, and calculation methods.
             </p>
           </div>
         </div>
 
-        <div className="mt-10 border-t border-slate-100 pt-6">
+        <div className="mt-8 border-t border-slate-100 pt-6 sm:mt-10 sm:flex sm:items-center sm:justify-between">
           <p className="text-xs leading-5 text-slate-400">
-            Calculator results are estimates and should not be treated as
-            financial advice.
+            Estimates only. Not financial advice.
+          </p>
+
+          <p className="mt-2 text-xs leading-5 text-slate-400 sm:mt-0">
+            © {new Date().getFullYear()} Finance Tools
           </p>
         </div>
       </div>
