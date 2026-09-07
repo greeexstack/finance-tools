@@ -23,13 +23,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${siteUrl}/swp-calculator`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
       url: `${siteUrl}/pf-calculator`,
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.9,
     },
     {
-      url: `${siteUrl}/swp-calculator`,
+      url: `${siteUrl}/ppf-calculator`,
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.9,

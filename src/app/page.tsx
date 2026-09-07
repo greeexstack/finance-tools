@@ -16,18 +16,25 @@ const tools = [
     href: "/rd-calculator",
   },
   {
-    name: "Public Provident Fund Calculator",
-    shortName: "PPF",
-    description:
-      "Estimate PPF maturity value using your contribution and expected rate.",
-    href: "/pf-calculator",
-  },
-  {
     name: "Systematic Withdrawal Plan Calculator",
     shortName: "SWP",
     description:
       "Estimate withdrawals, remaining balance, and portfolio growth over time.",
     href: "/swp-calculator",
+  },
+  {
+    name: "EPF Calculator — India",
+    shortName: "EPF",
+    description:
+      "Estimate your employee provident fund growth using employee and employer contributions.",
+    href: "/pf-calculator",
+  },
+  {
+    name: "PPF Calculator — India",
+    shortName: "PPF",
+    description:
+      "Estimate PPF maturity value using your contribution, deposit timing, and planning rate.",
+    href: "/ppf-calculator",
   },
   {
     name: "Currency Converter",
