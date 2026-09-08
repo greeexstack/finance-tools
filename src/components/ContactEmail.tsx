@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
-const CONTACT_EMAIL = "query.cratoo@gmail.com";
-const SUBJECT = "Finance Tools Feedback";
+const CONTACT_EMAIL =
+  "query.cratoo@gmail.com";
+
+const SUBJECT =
+  "Finance Tools Feedback";
 
 const MAILTO_URL =
   `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
@@ -13,17 +20,60 @@ const MAILTO_URL =
 const GMAIL_URL =
   `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
     CONTACT_EMAIL,
-  )}&su=${encodeURIComponent(SUBJECT)}`;
+  )}&su=${encodeURIComponent(
+    SUBJECT,
+  )}`;
 
 const OUTLOOK_URL =
   `https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(
     CONTACT_EMAIL,
-  )}&subject=${encodeURIComponent(SUBJECT)}`;
+  )}&subject=${encodeURIComponent(
+    SUBJECT,
+  )}`;
 
 type ContactEmailProps = {
   variant: "icon" | "text";
-  behavior?: "direct" | "chooser";
+  behavior?:
+    | "direct"
+    | "chooser"
+    | "responsive";
 };
+
+function useIsMobile() {
+  const [
+    isMobile,
+    setIsMobile,
+  ] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery =
+      window.matchMedia(
+        "(max-width: 767px)",
+      );
+
+    const update = () => {
+      setIsMobile(
+        mediaQuery.matches,
+      );
+    };
+
+    update();
+
+    mediaQuery.addEventListener(
+      "change",
+      update,
+    );
+
+    return () => {
+      mediaQuery.removeEventListener(
+        "change",
+        update,
+      );
+    };
+  }, []);
+
+  return isMobile;
+}
 
 export default function ContactEmail({
   variant,
@@ -35,8 +85,21 @@ export default function ContactEmail({
   const wrapperRef =
     useRef<HTMLDivElement>(null);
 
+  const isMobile = useIsMobile();
+
+  const shouldUseDirect =
+    behavior === "direct" ||
+    (behavior === "responsive" &&
+      isMobile);
+
+  const shouldUseChooser =
+    behavior === "chooser" ||
+    (behavior === "responsive" &&
+      !isMobile);
+
   useEffect(() => {
-    if (behavior !== "chooser") {
+    if (!shouldUseChooser) {
+      setIsOpen(false);
       return;
     }
 
@@ -64,10 +127,10 @@ export default function ContactEmail({
         handlePointerDown,
       );
     };
-  }, [behavior]);
+  }, [shouldUseChooser]);
 
   useEffect(() => {
-    if (behavior !== "chooser") {
+    if (!shouldUseChooser) {
       return;
     }
 
@@ -90,7 +153,7 @@ export default function ContactEmail({
         handleEscape,
       );
     };
-  }, [behavior]);
+  }, [shouldUseChooser]);
 
   const sharedClasses =
     variant === "icon"
@@ -125,12 +188,14 @@ export default function ContactEmail({
       </svg>
 
       {variant === "text" && (
-        <span>{CONTACT_EMAIL}</span>
+        <span>
+          {CONTACT_EMAIL}
+        </span>
       )}
     </>
   );
 
-  if (behavior === "direct") {
+  if (shouldUseDirect) {
     return (
       <a
         href={MAILTO_URL}
@@ -151,6 +216,17 @@ export default function ContactEmail({
     );
   }
 
+  if (!shouldUseChooser) {
+    return (
+      <span
+        className={sharedClasses}
+        aria-hidden="true"
+      >
+        {content}
+      </span>
+    );
+  }
+
   return (
     <div
       ref={wrapperRef}
@@ -159,7 +235,9 @@ export default function ContactEmail({
       <button
         type="button"
         onClick={() =>
-          setIsOpen((open) => !open)
+          setIsOpen(
+            (open) => !open,
+          )
         }
         aria-label="Contact Finance Tools"
         aria-haspopup="dialog"
@@ -185,8 +263,8 @@ export default function ContactEmail({
           </p>
 
           <p className="mt-1 text-xs leading-5 text-slate-500">
-            Choose how you would like to send your
-            message.
+            Choose how you would like to
+            send your message.
           </p>
 
           <div className="mt-3 grid gap-2">
@@ -194,7 +272,9 @@ export default function ContactEmail({
               href={GMAIL_URL}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => setIsOpen(false)}
+              onClick={() =>
+                setIsOpen(false)
+              }
               className="rounded-lg border border-slate-200 px-3 py-2.5 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
             >
               Gmail
@@ -204,7 +284,9 @@ export default function ContactEmail({
               href={OUTLOOK_URL}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => setIsOpen(false)}
+              onClick={() =>
+                setIsOpen(false)
+              }
               className="rounded-lg border border-slate-200 px-3 py-2.5 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
             >
               Outlook
@@ -212,7 +294,8 @@ export default function ContactEmail({
           </div>
 
           <p className="mt-3 text-[11px] leading-4 text-slate-400">
-            Both options use {CONTACT_EMAIL} and
+            Both options use{" "}
+            {CONTACT_EMAIL} and
             pre-fill the subject.
           </p>
         </div>
