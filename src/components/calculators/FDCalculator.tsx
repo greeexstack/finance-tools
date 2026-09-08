@@ -117,18 +117,14 @@ function InteractiveDonut({
       ? {
           label: "Interest",
           amount: interestAmount,
-          percentage:
-            interestPercentage,
-          colorClass:
-            "text-amber-300",
+          percentage: interestPercentage,
+          colorClass: "text-amber-300",
         }
       : {
           label: "Principal",
           amount: principalAmount,
-          percentage:
-            principalPercentage,
-          colorClass:
-            "text-indigo-300",
+          percentage: principalPercentage,
+          colorClass: "text-indigo-300",
         };
 
   return (
@@ -149,9 +145,7 @@ function InteractiveDonut({
           r={SVG_RADIUS}
           fill="none"
           stroke="rgba(255,255,255,0.06)"
-          strokeWidth={
-            SVG_STROKE_WIDTH
-          }
+          strokeWidth={SVG_STROKE_WIDTH}
         />
 
         {principalPercentage > 0 && (
@@ -162,9 +156,7 @@ function InteractiveDonut({
             )}
             fill="none"
             stroke="#a5b4fc"
-            strokeWidth={
-              SVG_STROKE_WIDTH
-            }
+            strokeWidth={SVG_STROKE_WIDTH}
             strokeLinecap="round"
             className="cursor-pointer transition-all duration-200"
             style={{
@@ -180,9 +172,7 @@ function InteractiveDonut({
                   : undefined,
             }}
             onMouseEnter={() =>
-              onSegmentChange(
-                "principal",
-              )
+              onSegmentChange("principal")
             }
           />
         )}
@@ -195,27 +185,21 @@ function InteractiveDonut({
             )}
             fill="none"
             stroke="#fbbf24"
-            strokeWidth={
-              SVG_STROKE_WIDTH
-            }
+            strokeWidth={SVG_STROKE_WIDTH}
             strokeLinecap="round"
             className="cursor-pointer transition-all duration-200"
             style={{
               opacity:
-                activeSegment ===
-                "interest"
+                activeSegment === "interest"
                   ? 1
                   : 0.5,
               filter:
-                activeSegment ===
-                "interest"
+                activeSegment === "interest"
                   ? "drop-shadow(0 0 7px rgba(251,191,36,0.45))"
                   : undefined,
             }}
             onMouseEnter={() =>
-              onSegmentChange(
-                "interest",
-              )
+              onSegmentChange("interest")
             }
           />
         )}
@@ -236,10 +220,7 @@ function InteractiveDonut({
         </span>
 
         <span className="mt-1 text-[10px] font-medium text-slate-500">
-          {selectedSegment.percentage.toFixed(
-            1,
-          )}
-          %
+          {selectedSegment.percentage.toFixed(1)}%
         </span>
       </div>
     </div>
@@ -266,9 +247,7 @@ export default function FDCalculator() {
     useState(false);
 
   const [activeSegment, setActiveSegment] =
-    useState<DonutSegment>(
-      "principal",
-    );
+    useState<DonutSegment>("principal");
 
   const isValid = hasValidValues(
     principal,
@@ -285,8 +264,7 @@ export default function FDCalculator() {
       principal: Number(principal),
       annualRate: Number(rate),
       tenureYears: Number(tenure),
-      compoundingFrequency:
-        Number(compounding),
+      compoundingFrequency: Number(compounding),
     });
   }, [
     principal,
@@ -301,15 +279,13 @@ export default function FDCalculator() {
 
   const principalPercentage =
     result && result.maturity > 0
-      ? (result.principal /
-          result.maturity) *
+      ? (result.principal / result.maturity) *
         100
       : 0;
 
   const interestPercentage =
     result && result.maturity > 0
-      ? (result.interest /
-          result.maturity) *
+      ? (result.interest / result.maturity) *
         100
       : 0;
 
@@ -318,38 +294,36 @@ export default function FDCalculator() {
     setRate("");
     setTenure("");
     setCompounding("4");
+    setCurrency(null);
     setCopied(false);
-    setActiveSegment(
-      "principal",
-    );
+    setActiveSegment("principal");
   };
 
-  const copyMaturityAmount =
-    async () => {
-      if (!result) {
-        return;
-      }
+  const copyMaturityAmount = async () => {
+    if (!result) {
+      return;
+    }
 
-      const formattedValue =
-        formatCurrency(
-          result.maturity,
-          activeCurrency,
-        );
+    const formattedValue =
+      formatCurrency(
+        result.maturity,
+        activeCurrency,
+      );
 
-      try {
-        await navigator.clipboard.writeText(
-          formattedValue,
-        );
+    try {
+      await navigator.clipboard.writeText(
+        formattedValue,
+      );
 
-        setCopied(true);
+      setCopied(true);
 
-        window.setTimeout(() => {
-          setCopied(false);
-        }, 1800);
-      } catch {
+      window.setTimeout(() => {
         setCopied(false);
-      }
-    };
+      }, 1800);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   return (
     <div className="grid min-w-0 gap-6 lg:grid-cols-2 lg:items-start">
@@ -367,7 +341,8 @@ export default function FDCalculator() {
             </h2>
 
             <p className="mt-1.5 text-sm leading-6 text-slate-500">
-              Enter the details below to see your estimated maturity amount.
+              Enter the deposit, interest rate, tenure, and
+              compounding frequency to estimate maturity value.
             </p>
           </div>
         </div>
@@ -394,9 +369,7 @@ export default function FDCalculator() {
               inputMode="decimal"
               value={principal}
               onChange={(e) =>
-                setPrincipal(
-                  e.target.value,
-                )
+                setPrincipal(e.target.value)
               }
               placeholder="Enter amount"
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
@@ -419,9 +392,7 @@ export default function FDCalculator() {
               inputMode="decimal"
               value={rate}
               onChange={(e) =>
-                setRate(
-                  e.target.value,
-                )
+                setRate(e.target.value)
               }
               placeholder="Enter rate"
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
@@ -444,13 +415,15 @@ export default function FDCalculator() {
               inputMode="decimal"
               value={tenure}
               onChange={(e) =>
-                setTenure(
-                  e.target.value,
-                )
+                setTenure(e.target.value)
               }
               placeholder="Enter years"
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             />
+
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              Fractional years are supported for planning estimates.
+            </p>
           </div>
 
           <div>
@@ -465,9 +438,7 @@ export default function FDCalculator() {
               id="fd-compounding"
               value={compounding}
               onChange={(e) =>
-                setCompounding(
-                  e.target.value,
-                )
+                setCompounding(e.target.value)
               }
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             >
@@ -482,13 +453,15 @@ export default function FDCalculator() {
                 ),
               )}
             </select>
+
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              The estimate compounds interest at the selected frequency.
+            </p>
           </div>
 
           <button
             type="button"
-            onClick={
-              resetCalculator
-            }
+            onClick={resetCalculator}
             className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 hover:shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
           >
             Reset
@@ -509,7 +482,6 @@ export default function FDCalculator() {
         />
 
         <div className="relative min-w-0">
-          {/* Result header */}
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-300">
               Result
@@ -520,7 +492,7 @@ export default function FDCalculator() {
             </h2>
 
             <p className="mt-1.5 text-sm leading-6 text-slate-400">
-              Estimated based on the values you entered.
+              Estimated using the values you entered.
             </p>
           </div>
 
@@ -547,12 +519,9 @@ export default function FDCalculator() {
                   />
                 </div>
 
-                {/* Copy action */}
                 <button
                   type="button"
-                  onClick={
-                    copyMaturityAmount
-                  }
+                  onClick={copyMaturityAmount}
                   aria-label="Copy maturity amount"
                   title="Copy maturity amount"
                   className="absolute bottom-4 right-4 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.07] text-slate-300 backdrop-blur transition-all duration-200 hover:scale-[1.03] hover:border-white/20 hover:bg-white/[0.12] hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20"
@@ -610,15 +579,12 @@ export default function FDCalculator() {
                     </p>
 
                     <p className="mt-1 text-xs leading-5 text-slate-400">
-                      Select a segment to inspect its share
+                      Principal and interest components of the estimate
                     </p>
                   </div>
 
                   <span className="shrink-0 whitespace-nowrap rounded-full bg-amber-400/10 px-2.5 py-1 text-xs font-semibold text-amber-300">
-                    {interestPercentage.toFixed(
-                      1,
-                    )}
-                    % interest
+                    {interestPercentage.toFixed(1)}% interest
                   </span>
                 </div>
 
@@ -650,17 +616,13 @@ export default function FDCalculator() {
                   <button
                     type="button"
                     onClick={() =>
-                      setActiveSegment(
-                        "principal",
-                      )
+                      setActiveSegment("principal")
                     }
                     aria-pressed={
-                      activeSegment ===
-                      "principal"
+                      activeSegment === "principal"
                     }
                     className={`min-h-12 min-w-0 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-400/20 ${
-                      activeSegment ===
-                      "principal"
+                      activeSegment === "principal"
                         ? "border-indigo-300/30 bg-indigo-300/10"
                         : "border-white/8 bg-black/10 hover:border-indigo-300/20 hover:bg-indigo-300/5"
                     }`}
@@ -690,23 +652,18 @@ export default function FDCalculator() {
                     </div>
 
                     <p className="mt-1 text-xs text-slate-500">
-                      {principalPercentage.toFixed(
-                        1,
-                      )}
-                      % of total
+                      {principalPercentage.toFixed(1)}%
+                      of total
                     </p>
                   </button>
 
                   <button
                     type="button"
                     onClick={() =>
-                      setActiveSegment(
-                        "interest",
-                      )
+                      setActiveSegment("interest")
                     }
                     aria-pressed={
-                      activeSegment ===
-                      "interest"
+                      activeSegment === "interest"
                     }
                     className={`min-h-12 min-w-0 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-amber-400/20 ${
                       activeSegment === "interest"
@@ -737,13 +694,27 @@ export default function FDCalculator() {
                     </div>
 
                     <p className="mt-1 text-xs text-slate-500">
-                      {interestPercentage.toFixed(
-                        1,
-                      )}
-                      % of total
+                      {interestPercentage.toFixed(1)}%
+                      of total
                     </p>
                   </button>
                 </div>
+              </div>
+
+              {/* Estimate note */}
+              <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-4">
+                <p className="text-xs font-semibold text-amber-300">
+                  Estimate, not a bank quote
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-slate-400">
+                  This calculator uses a compound-interest formula based on
+                  the principal, entered rate, tenure, and selected
+                  compounding frequency. Actual FD maturity may differ
+                  because banks and financial institutions can apply their
+                  own rates, compounding conventions, taxes, and product
+                  terms.
+                </p>
               </div>
             </div>
           ) : (
@@ -771,8 +742,8 @@ export default function FDCalculator() {
                 </p>
 
                 <p className="mt-2 max-w-sm text-sm leading-6 text-slate-400">
-                  Enter your principal amount, interest rate, and tenure to see
-                  your estimated maturity amount and interest earned.
+                  Enter your principal amount, interest rate, and tenure to
+                  see your estimated maturity amount and interest earned.
                 </p>
               </div>
             </div>

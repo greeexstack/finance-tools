@@ -9,7 +9,7 @@ export type PPFContributionTiming =
 export type PPFCalculationInput = {
   /**
    * For "yearly":
-   *   contributionAmount = yearly contribution.
+   *   contributionAmount = annual contribution.
    *
    * For "monthly":
    *   contributionAmount = monthly contribution.
@@ -23,8 +23,11 @@ export type PPFCalculationInput = {
   contributionFrequency?: PPFContributionFrequency;
 
   /**
-   * Whether contributions are made on/before the 5th
-   * of the month or after the 5th.
+   * Whether monthly contributions are treated as being
+   * deposited on/before the 5th or after the 5th.
+   *
+   * For yearly contributions, the calculator assumes the
+   * annual deposit is made in April.
    */
   contributionTiming?: PPFContributionTiming;
 };
@@ -46,18 +49,26 @@ const MAX_ANNUAL_CONTRIBUTION = 150_000;
 
 const CONTRIBUTION_MULTIPLE = 50;
 
+const MONTHS_PER_YEAR = 12;
+
 /**
  * PPF calculator estimate.
  *
  * Official PPF interest mechanics:
- * - Interest is calculated for each month.
+ * - Interest is calculated for each calendar month.
  * - The applicable balance is the lowest balance between
  *   the close of the 5th day and the end of that month.
  * - Interest is credited to the account at the end of the year.
  *
- * This calculator intentionally models an estimate rather
- * than an individual passbook. Actual results depend on
- * actual deposit dates, rate changes, withdrawals, etc.
+ * Simplified calculator assumptions:
+ * - The financial year is modeled as April through March.
+ * - Yearly contributions are deposited in April.
+ * - Monthly mode models one equal deposit per month.
+ * - The selected timing applies to each monthly deposit.
+ *
+ * Actual account results can differ because actual deposit dates,
+ * interest-rate changes, withdrawals, and other account activity
+ * can affect the balance.
  */
 export function calculatePPF({
   contributionAmount,
@@ -77,28 +88,22 @@ export function calculatePPF({
   if (
     contributionAmount <= 0 ||
     annualRate < 0 ||
-    tenureYears <= 0
+    tenureYears <= 0 ||
+    !Number.isInteger(tenureYears)
   ) {
     return null;
   }
 
-  const years = Math.round(tenureYears);
+  const years = tenureYears;
 
-  if (years <= 0) {
-    return null;
-  }
-
-  /*
-   * Determine the annual subscription implied by
-   * the selected contribution frequency.
-   */
   const annualContribution =
     contributionFrequency === "monthly"
-      ? contributionAmount * 12
+      ? contributionAmount * MONTHS_PER_YEAR
       : contributionAmount;
 
   /*
-   * PPF annual contribution limits.
+   * PPF annual subscription limits:
+   * minimum ₹500, maximum ₹1,50,000.
    */
   if (
     annualContribution <
@@ -110,8 +115,7 @@ export function calculatePPF({
   }
 
   /*
-   * The annual subscription must be in multiples
-   * of ₹50.
+   * PPF deposits must be in multiples of ₹50.
    */
   if (
     annualContribution %
@@ -122,11 +126,8 @@ export function calculatePPF({
   }
 
   /*
-   * For monthly contributions, the monthly amount
-   * itself should also be a valid ₹50 multiple.
-   *
-   * This prevents the calculator from silently creating
-   * fractional rupee monthly subscriptions.
+   * In monthly mode, validate the selected monthly
+   * contribution itself as a ₹50 multiple.
    */
   if (
     contributionFrequency === "monthly" &&
@@ -138,7 +139,7 @@ export function calculatePPF({
   }
 
   const monthlyRate =
-    annualRate / 12 / 100;
+    annualRate / MONTHS_PER_YEAR / 100;
 
   let balance = 0;
   let totalContributions = 0;
@@ -152,28 +153,32 @@ export function calculatePPF({
 
     for (
       let month = 0;
-      month < 12;
+      month < MONTHS_PER_YEAR;
       month += 1
     ) {
-      /*
-       * Determine whether a contribution is made
-       * during this month.
-       */
       let contributionThisMonth = 0;
 
       if (contributionFrequency === "yearly") {
         /*
-         * The yearly contribution is made once,
-         * in April for our financial-year model.
+         * Financial-year model:
+         * annual contribution is assumed to be deposited
+         * in April, represented by month 0.
          */
         if (month === 0) {
           contributionThisMonth =
             contributionAmount;
         }
       } else {
+        /*
+         * Monthly mode:
+         * one equal contribution is modeled each month.
+         */
         contributionThisMonth =
           contributionAmount;
       }
+
+      const balanceBeforeContribution =
+        balance;
 
       if (contributionThisMonth > 0) {
         balance += contributionThisMonth;
@@ -182,21 +187,22 @@ export function calculatePPF({
       }
 
       /*
-       * Under the PPF rule:
+       * PPF interest is based on the lowest balance between
+       * the close of the 5th day and the end of the month.
        *
-       * - before/on the 5th:
-       *   the new deposit participates in this month's
-       *   eligible balance.
+       * A deposit made on/before the 5th participates in the
+       * month's eligible balance.
        *
-       * - after the 5th:
-       *   this month's eligible balance remains the
-       *   balance that existed before the deposit.
+       * A deposit made after the 5th does not participate in
+       * that month's eligible balance.
+       *
+       * For yearly contributions, this timing represents the
+       * assumed April deposit timing as well.
        */
       const interestEligibleBalance =
         contributionThisMonth > 0 &&
         contributionTiming === "after5th"
-          ? balance -
-            contributionThisMonth
+          ? balanceBeforeContribution
           : balance;
 
       yearlyInterest +=
@@ -205,12 +211,8 @@ export function calculatePPF({
     }
 
     /*
-     * PPF interest is credited at the end of the year.
-     *
-     * The scheme provides for the credited interest
-     * amount to be rounded to the nearest rupee:
-     * 50 paise or more rounds up; less than 50 paise
-     * is ignored.
+     * Interest is credited at the end of the year.
+     * Fractional rupees are rounded to the nearest rupee.
      */
     balance += Math.round(
       yearlyInterest,

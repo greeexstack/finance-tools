@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+const CONTACT_EMAIL = "query.cratoo@gmail.com";
+
 const calculatorLinks = [
   { name: "FD Calculator", href: "/fd-calculator" },
   { name: "RD Calculator", href: "/rd-calculator" },
@@ -25,7 +27,8 @@ export default function SiteFooter() {
   return (
     <footer className="bg-slate-950 text-slate-300">
       <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1fr_0.8fr_1fr]">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1fr_0.8fr_0.9fr_1fr]">
+          {/* Brand */}
           <div>
             <Link
               href="/"
@@ -50,6 +53,7 @@ export default function SiteFooter() {
             </p>
           </div>
 
+          {/* Tools */}
           <div>
             <h2 className="text-sm font-semibold text-white">
               Tools
@@ -77,6 +81,47 @@ export default function SiteFooter() {
             </nav>
           </div>
 
+          {/* Feedback */}
+          <div>
+            <h2 className="text-sm font-semibold text-white">
+              Feedback
+            </h2>
+
+            <p className="mt-4 text-sm leading-6 text-slate-400">
+              Found an issue, have a suggestion, or want to share an idea?
+              Your feedback helps improve these tools.
+            </p>
+
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-indigo-300 transition hover:text-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4 shrink-0"
+                aria-hidden="true"
+              >
+                <rect
+                  x="3"
+                  y="5"
+                  width="18"
+                  height="14"
+                  rx="2"
+                />
+
+                <path d="m3 7 9 6 9-6" />
+              </svg>
+
+              {CONTACT_EMAIL}
+            </a>
+          </div>
+
+          {/* About */}
           <div>
             <h2 className="text-sm font-semibold text-white">
               About these tools

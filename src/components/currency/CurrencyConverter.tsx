@@ -32,25 +32,26 @@ function formatRateDate(date: string) {
 }
 
 export default function CurrencyConverter() {
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] =
+    useState("");
 
-  const [fromCurrency, setFromCurrency] = useState<
-    string | null
-  >(null);
-  const [toCurrency, setToCurrency] = useState<
-    string | null
-  >(null);
+  const [fromCurrency, setFromCurrency] =
+    useState<string | null>(null);
 
-  const [rate, setRate] = useState<number | null>(
-    null,
-  );
-  const [rateDate, setRateDate] = useState<
-    string | null
-  >(null);
+  const [toCurrency, setToCurrency] =
+    useState<string | null>(null);
+
+  const [rate, setRate] =
+    useState<number | null>(null);
+
+  const [rateDate, setRateDate] =
+    useState<string | null>(null);
 
   const [isLoading, setIsLoading] =
     useState(false);
-  const [error, setError] = useState("");
+
+  const [error, setError] =
+    useState("");
 
   useEffect(() => {
     const defaultCurrency =
@@ -71,7 +72,9 @@ export default function CurrencyConverter() {
 
   useEffect(() => {
     if (fromCurrency) {
-      saveCurrencyPreference(fromCurrency);
+      saveCurrencyPreference(
+        fromCurrency,
+      );
     }
   }, [fromCurrency]);
 
@@ -92,10 +95,13 @@ export default function CurrencyConverter() {
     return parsed;
   }, [amount]);
 
+  const hasInvalidAmount =
+    amount.trim() !== "" &&
+    numericAmount === null;
+
   /*
-   * Fetch the exchange rate only when the selected
-   * currencies change. The amount does not affect
-   * the exchange rate.
+   * The exchange rate depends only on the selected
+   * currencies, not on the amount being converted.
    */
   useEffect(() => {
     const from = fromCurrency;
@@ -145,7 +151,8 @@ export default function CurrencyConverter() {
         if (
           !response.ok ||
           typeof data.rate !== "number" ||
-          !Number.isFinite(data.rate)
+          !Number.isFinite(data.rate) ||
+          data.rate <= 0
         ) {
           throw new Error(
             data.error ??
@@ -196,6 +203,9 @@ export default function CurrencyConverter() {
   function handleSwap() {
     setFromCurrency(toCurrency);
     setToCurrency(fromCurrency);
+    setRate(null);
+    setRateDate(null);
+    setError("");
   }
 
   return (
@@ -223,8 +233,21 @@ export default function CurrencyConverter() {
               )
             }
             placeholder="Enter amount"
-            className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+            aria-invalid={
+              hasInvalidAmount
+            }
+            className={`min-h-12 w-full rounded-xl border bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-4 ${
+              hasInvalidAmount
+                ? "border-red-300 focus:border-red-500 focus:ring-red-500/10"
+                : "border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/10"
+            }`}
           />
+
+          {hasInvalidAmount && (
+            <p className="mt-2 text-xs leading-5 text-red-600">
+              Enter a valid non-negative amount.
+            </p>
+          )}
         </div>
 
         {/* Currency selection */}
@@ -310,11 +333,20 @@ export default function CurrencyConverter() {
                   </p>
                 )}
 
-              {rateDate && (
+              {rateDate ? (
                 <p className="mt-1 text-xs text-slate-400">
-                  Rate date:{" "}
-                  {formatRateDate(rateDate)}
+                  Latest available rate dated{" "}
+                  {formatRateDate(rateDate)}.
                 </p>
+              ) : (
+                fromCurrency &&
+                toCurrency &&
+                fromCurrency ===
+                  toCurrency && (
+                  <p className="mt-1 text-xs text-slate-400">
+                    Same-currency conversion.
+                  </p>
+                )
               )}
             </>
           ) : (
@@ -322,6 +354,16 @@ export default function CurrencyConverter() {
               Enter an amount to convert
             </p>
           )}
+        </div>
+
+        {/* Rate note */}
+        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <p className="text-xs leading-5 text-slate-500">
+            Exchange rates are provided for reference and
+            may change over time. This converter does not
+            guarantee the rate available for a bank, card,
+            cash exchange, transfer, or other transaction.
+          </p>
         </div>
 
         {/* Error */}

@@ -6,7 +6,6 @@ import {
   formatCompactCurrency,
   formatCurrency,
 } from "@/lib/format-currency";
-import CurrencySelector from "@/components/calculators/CurrencySelector";
 import ResultAmount from "@/components/calculators/ResultAmount";
 
 const DEFAULT_RATE = 7.1;
@@ -16,10 +15,46 @@ type Timing = "before5th" | "after5th";
 
 const TENURE_OPTIONS = [15, 20, 25, 30];
 
-function getInitialAmount(frequency: Frequency) {
+const MIN_YEARLY_CONTRIBUTION = 500;
+const MAX_YEARLY_CONTRIBUTION = 150_000;
+const CONTRIBUTION_MULTIPLE = 50;
+
+const MIN_MONTHLY_CONTRIBUTION =
+  MIN_YEARLY_CONTRIBUTION / 12;
+
+const MAX_MONTHLY_CONTRIBUTION =
+  MAX_YEARLY_CONTRIBUTION / 12;
+
+function getInitialAmount(
+  frequency: Frequency,
+) {
   return frequency === "yearly"
     ? 150_000
     : 12_500;
+}
+
+function getContributionMin(
+  frequency: Frequency,
+) {
+  return frequency === "yearly"
+    ? MIN_YEARLY_CONTRIBUTION
+    : MIN_MONTHLY_CONTRIBUTION;
+}
+
+function getContributionMax(
+  frequency: Frequency,
+) {
+  return frequency === "yearly"
+    ? MAX_YEARLY_CONTRIBUTION
+    : MAX_MONTHLY_CONTRIBUTION;
+}
+
+function getContributionHelp(
+  frequency: Frequency,
+) {
+  return frequency === "yearly"
+    ? "₹500 to ₹1,50,000 per financial year, in multiples of ₹50. Yearly mode assumes the deposit is made in April."
+    : "₹50 to ₹12,500 per month, in multiples of ₹50. This model assumes one equal deposit each month.";
 }
 
 export default function PPFCalculator() {
@@ -44,9 +79,6 @@ export default function PPFCalculator() {
   const [tenureYears, setTenureYears] =
     useState("15");
 
-  const [currencyCode, setCurrencyCode] =
-    useState("INR");
-
   const result = useMemo(() => {
     return calculatePPF({
       contributionAmount:
@@ -70,9 +102,9 @@ export default function PPFCalculator() {
       : "Monthly Contribution";
 
   const contributionHelp =
-    contributionFrequency === "yearly"
-      ? "₹500 to ₹1,50,000 per financial year."
-      : "Monthly deposits are modeled across the year.";
+    getContributionHelp(
+      contributionFrequency,
+    );
 
   const totalValue =
     result?.maturityAmount ?? 0;
@@ -124,7 +156,6 @@ export default function PPFCalculator() {
     setContributionTiming("before5th");
     setAnnualRate(String(DEFAULT_RATE));
     setTenureYears("15");
-    setCurrencyCode("INR");
   }
 
   async function handleCopyResult() {
@@ -136,15 +167,15 @@ export default function PPFCalculator() {
       "PPF Estimate",
       `Estimated Value: ${formatCurrency(
         result.maturityAmount,
-        currencyCode,
+        "INR",
       )}`,
       `Total Contributions: ${formatCurrency(
         result.totalContributions,
-        currencyCode,
+        "INR",
       )}`,
       `Interest Earned: ${formatCurrency(
         result.interestEarned,
-        currencyCode,
+        "INR",
       )}`,
       `Planning Rate: ${result.annualRate}%`,
       `Tenure: ${result.tenureYears} years`,
@@ -223,8 +254,14 @@ export default function PPFCalculator() {
               <input
                 id="ppf-contribution"
                 type="number"
-                inputMode="decimal"
-                min="0"
+                inputMode="numeric"
+                min={getContributionMin(
+                  contributionFrequency,
+                )}
+                max={getContributionMax(
+                  contributionFrequency,
+                )}
+                step={CONTRIBUTION_MULTIPLE}
                 value={contributionAmount}
                 onChange={(event) =>
                   setContributionAmount(
@@ -274,8 +311,8 @@ export default function PPFCalculator() {
             </select>
 
             <p className="mt-2 text-xs leading-5 text-slate-500">
-              The timing affects how that month is treated
-              in this estimate.
+              The deposit timing affects that month’s
+              interest calculation.
             </p>
           </div>
 
@@ -310,7 +347,8 @@ export default function PPFCalculator() {
 
             <p className="mt-2 text-xs leading-5 text-slate-500">
               Uses {DEFAULT_RATE}% as the planning default.
-              PPF rates are government-notified and can change.
+              The applicable PPF rate is government-notified
+              and may change.
             </p>
           </div>
 
@@ -351,14 +389,19 @@ export default function PPFCalculator() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-800">
-              Currency
-            </label>
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <label className="text-sm font-semibold text-slate-800">
+                Currency
+              </label>
 
-            <CurrencySelector
-              value={currencyCode}
-              onChange={setCurrencyCode}
-            />
+              <span className="text-xs font-medium text-slate-500">
+                INR
+              </span>
+            </div>
+
+            <div className="flex h-12 items-center rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-700">
+              Indian Rupee (₹)
+            </div>
           </div>
 
           <button
@@ -399,8 +442,10 @@ export default function PPFCalculator() {
 
                 <div className="mt-3 min-w-0 w-full">
                   <ResultAmount
-                    value={result.maturityAmount}
-                    currencyCode={currencyCode}
+                    value={
+                      result.maturityAmount
+                    }
+                    currencyCode="INR"
                     size="hero"
                     className="text-white"
                   />
@@ -499,7 +544,7 @@ export default function PPFCalculator() {
                     <span className="mt-1 max-w-[115px] overflow-hidden text-center text-sm font-bold leading-tight text-white">
                       {formatCompactCurrency(
                         result.maturityAmount,
-                        currencyCode,
+                        "INR",
                       )}
                     </span>
                   </div>
@@ -529,9 +574,7 @@ export default function PPFCalculator() {
                         value={
                           result.totalContributions
                         }
-                        currencyCode={
-                          currencyCode
-                        }
+                        currencyCode="INR"
                         size="card"
                         className="text-white"
                       />
@@ -559,9 +602,7 @@ export default function PPFCalculator() {
                         value={
                           result.interestEarned
                         }
-                        currencyCode={
-                          currencyCode
-                        }
+                        currencyCode="INR"
                         size="card"
                         className="text-white"
                       />
@@ -604,10 +645,13 @@ export default function PPFCalculator() {
               </p>
 
               <p className="mt-1 text-xs leading-5 text-slate-400">
-                This calculator uses a simplified PPF model based on your
-                contribution pattern, timing, planning rate, and tenure.
-                Actual PPF returns can differ because government rates,
-                deposit dates, withdrawals, and account history can affect
+                This calculator uses a simplified PPF model based on
+                your contribution pattern, modeled deposit timing,
+                planning rate, and tenure. Yearly contributions are
+                modeled as an April deposit, while monthly mode models
+                one equal deposit each month. Actual account results
+                can differ because applicable rates, actual deposit
+                dates, withdrawals, and account history can affect
                 the final amount.
               </p>
             </div>

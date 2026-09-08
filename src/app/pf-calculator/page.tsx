@@ -5,7 +5,7 @@ import PFCalculator from "@/components/calculators/PFCalculator";
 export const metadata: Metadata = {
   title: "EPF Calculator — India",
   description:
-    "Estimate your Employees' Provident Fund (EPF) value, total contributions, and interest earned using monthly employee and employer contributions, annual interest rate, and tenure.",
+    "Estimate your EPF balance using monthly basic + DA, the standard EPF contribution structure, current balance, interest rate, and tenure.",
   alternates: {
     canonical: "/pf-calculator",
   },
@@ -16,20 +16,26 @@ export default function PFCalculatorPage() {
     <CalculatorPage
       eyebrow="India • Employees' Provident Fund"
       title="EPF Calculator"
-      description="Estimate your EPF value based on your monthly employee and employer contributions, annual interest rate, and tenure."
+      description="Estimate your EPF balance using monthly basic + DA, your current EPF balance, interest rate, and tenure."
       infoTitle="How the EPF calculation works"
       infoContent={
         <>
           <p>
-            This calculator provides an estimate based on the monthly
-            employee and employer contributions, the entered annual interest
-            rate, and the selected tenure.
+            This calculator uses a standard EPF contribution model based on
+            monthly Basic + DA, the ₹15,000 wage ceiling used in this estimate,
+            and the standard employee and employer contribution structure.
           </p>
 
           <p className="mt-4">
-            Actual EPF results can differ because applicable contribution
-            rules, interest-crediting methods, eligible components, and
-            account-specific factors may affect the final amount.
+            EPF interest is estimated using monthly running balances and the
+            annual rate you enter. New monthly contributions are treated as
+            earning interest from the following month.
+          </p>
+
+          <p className="mt-4">
+            This is a standard-case estimate. Higher-wage contributions and
+            other special EPF arrangements, exceptions, withdrawals, and
+            account-specific changes are not modeled.
           </p>
 
           <p className="mt-4 text-sm text-slate-500">

@@ -25,7 +25,8 @@ export function calculateFD({
     principal <= 0 ||
     annualRate < 0 ||
     tenureYears <= 0 ||
-    compoundingFrequency <= 0
+    compoundingFrequency <= 0 ||
+    !Number.isInteger(compoundingFrequency)
   ) {
     return null;
   }

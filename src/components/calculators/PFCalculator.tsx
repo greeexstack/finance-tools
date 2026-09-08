@@ -9,33 +9,42 @@ import {
   formatCurrency,
 } from "@/lib/format-currency";
 
+const DEFAULT_RATE = 8.25;
+
 const SVG_SIZE = 160;
 const SVG_CENTER = SVG_SIZE / 2;
 const SVG_RADIUS = 58;
 const SVG_STROKE_WIDTH = 24;
 
 type DonutSegment =
+  | "startingBalance"
   | "contributions"
   | "interest";
 
 type SegmentDetails = {
-  label: "Total Contributions" | "Interest";
+  label:
+    | "Starting Balance"
+    | "New EPF Contributions"
+    | "Interest Earned";
   amount: number;
   percentage: number;
   colorClass: string;
 };
 
 function hasValidValues(
-  employeeContribution: string,
-  employerContribution: string,
-  rate: string,
+  monthlyBasicDA: string,
+  currentEPFBalance: string,
+  annualRate: string,
   tenure: string,
 ): boolean {
+  const tenureValue = Number(tenure);
+
   return (
-    Number(employeeContribution) >= 0 &&
-    Number(employerContribution) >= 0 &&
-    Number(rate) >= 0 &&
-    Number(tenure) > 0
+    Number(monthlyBasicDA) > 0 &&
+    Number(currentEPFBalance) >= 0 &&
+    Number(annualRate) >= 0 &&
+    Number.isInteger(tenureValue) &&
+    tenureValue > 0
   );
 }
 
@@ -90,16 +99,20 @@ function describeArc(
 }
 
 function InteractiveDonut({
+  startingBalancePercentage,
   contributionsPercentage,
   interestPercentage,
+  startingBalanceAmount,
   contributionsAmount,
   interestAmount,
   activeCurrency,
   activeSegment,
   onSegmentChange,
 }: {
+  startingBalancePercentage: number;
   contributionsPercentage: number;
   interestPercentage: number;
+  startingBalanceAmount: number;
   contributionsAmount: number;
   interestAmount: number;
   activeCurrency: string;
@@ -108,29 +121,40 @@ function InteractiveDonut({
     segment: DonutSegment,
   ) => void;
 }) {
+  const startingBalanceEndAngle =
+    startingBalancePercentage * 3.6;
+
   const contributionsEndAngle =
-    contributionsPercentage * 3.6;
+    (startingBalancePercentage +
+      contributionsPercentage) *
+    3.6;
 
   const selectedSegment: SegmentDetails =
-    activeSegment === "interest"
+    activeSegment === "startingBalance"
       ? {
-          label: "Interest",
-          amount: interestAmount,
+          label: "Starting Balance",
+          amount: startingBalanceAmount,
           percentage:
-            interestPercentage,
+            startingBalancePercentage,
           colorClass:
-            "text-amber-300",
+            "text-slate-300",
         }
-      : {
-          label:
-            "Total Contributions",
-          amount:
-            contributionsAmount,
-          percentage:
-            contributionsPercentage,
-          colorClass:
-            "text-indigo-300",
-        };
+      : activeSegment === "interest"
+        ? {
+            label: "Interest Earned",
+            amount: interestAmount,
+            percentage: interestPercentage,
+            colorClass:
+              "text-amber-300",
+          }
+        : {
+            label: "New EPF Contributions",
+            amount: contributionsAmount,
+            percentage:
+              contributionsPercentage,
+            colorClass:
+              "text-indigo-300",
+          };
 
   return (
     <div className="relative mx-auto mt-7 flex h-44 w-44 items-center justify-center">
@@ -155,11 +179,45 @@ function InteractiveDonut({
           }
         />
 
-        {contributionsPercentage >
+        {startingBalancePercentage >
           0 && (
           <path
             d={describeArc(
               0,
+              startingBalanceEndAngle,
+            )}
+            fill="none"
+            stroke="#94a3b8"
+            strokeWidth={
+              SVG_STROKE_WIDTH
+            }
+            strokeLinecap="round"
+            className="cursor-pointer transition-all duration-200"
+            style={{
+              opacity:
+                activeSegment ===
+                "startingBalance"
+                  ? 1
+                  : 0.5,
+              filter:
+                activeSegment ===
+                "startingBalance"
+                  ? "drop-shadow(0 0 7px rgba(148,163,184,0.4))"
+                  : undefined,
+            }}
+            onMouseEnter={() =>
+              onSegmentChange(
+                "startingBalance",
+              )
+            }
+          />
+        )}
+
+        {contributionsPercentage >
+          0 && (
+          <path
+            d={describeArc(
+              startingBalanceEndAngle,
               contributionsEndAngle,
             )}
             fill="none"
@@ -250,17 +308,17 @@ function InteractiveDonut({
 
 export default function PFCalculator() {
   const [
-    employeeContribution,
-    setEmployeeContribution,
+    monthlyBasicDA,
+    setMonthlyBasicDA,
   ] = useState("");
 
   const [
-    employerContribution,
-    setEmployerContribution,
-  ] = useState("");
+    currentEPFBalance,
+    setCurrentEPFBalance,
+  ] = useState("0");
 
-  const [rate, setRate] =
-    useState("");
+  const [annualRate, setAnnualRate] =
+    useState(String(DEFAULT_RATE));
 
   const [tenure, setTenure] =
     useState("");
@@ -279,9 +337,9 @@ export default function PFCalculator() {
   );
 
   const isValid = hasValidValues(
-    employeeContribution,
-    employerContribution,
-    rate,
+    monthlyBasicDA,
+    currentEPFBalance,
+    annualRate,
     tenure,
   );
 
@@ -291,23 +349,33 @@ export default function PFCalculator() {
     }
 
     return calculatePF({
-      monthlyEmployeeContribution:
-        Number(employeeContribution),
-      monthlyEmployerContribution:
-        Number(employerContribution),
-      annualRate: Number(rate),
-      tenureYears: Number(tenure),
+      monthlyBasicDA:
+        Number(monthlyBasicDA),
+      currentEPFBalance:
+        Number(currentEPFBalance),
+      annualRate:
+        Number(annualRate),
+      tenureYears:
+        Number(tenure),
     });
   }, [
-    employeeContribution,
-    employerContribution,
-    rate,
+    monthlyBasicDA,
+    currentEPFBalance,
+    annualRate,
     tenure,
     isValid,
   ]);
 
   const activeCurrency =
     currency ?? "INR";
+
+  const startingBalancePercentage =
+    result &&
+    result.maturityAmount > 0
+      ? (result.startingEPFBalance /
+          result.maturityAmount) *
+        100
+      : 0;
 
   const contributionsPercentage =
     result &&
@@ -326,10 +394,11 @@ export default function PFCalculator() {
       : 0;
 
   const resetCalculator = () => {
-    setEmployeeContribution("");
-    setEmployerContribution("");
-    setRate("");
+    setMonthlyBasicDA("");
+    setCurrentEPFBalance("0");
+    setAnnualRate(String(DEFAULT_RATE));
     setTenure("");
+    setCurrency(null);
     setCopied(false);
     setActiveSegment(
       "contributions",
@@ -384,10 +453,9 @@ export default function PFCalculator() {
             </h2>
 
             <p className="mt-1.5 text-sm leading-6 text-slate-500">
-              Enter your monthly employee
-              and employer contributions,
-              interest rate, and tenure to
-              estimate your EPF value.
+              Enter your monthly Basic + DA,
+              current EPF balance, interest
+              rate, and tenure.
             </p>
           </div>
         </div>
@@ -400,58 +468,60 @@ export default function PFCalculator() {
 
           <div>
             <label
-              htmlFor="pf-employee"
+              htmlFor="pf-basic-da"
               className="mb-2 block text-sm font-medium text-slate-700"
             >
-              Monthly Employee
-              Contribution
+              Monthly Basic + DA
             </label>
 
             <input
-              id="pf-employee"
+              id="pf-basic-da"
               type="number"
               min="0"
               step="any"
               inputMode="decimal"
-              value={
-                employeeContribution
-              }
+              value={monthlyBasicDA}
               onChange={(e) =>
-                setEmployeeContribution(
+                setMonthlyBasicDA(
                   e.target.value,
                 )
               }
               placeholder="Enter amount"
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             />
+
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              Standard EPF wages are capped at ₹15,000 in this estimate.
+            </p>
           </div>
 
           <div>
             <label
-              htmlFor="pf-employer"
+              htmlFor="pf-current-balance"
               className="mb-2 block text-sm font-medium text-slate-700"
             >
-              Monthly Employer
-              Contribution
+              Current EPF Balance
             </label>
 
             <input
-              id="pf-employer"
+              id="pf-current-balance"
               type="number"
               min="0"
               step="any"
               inputMode="decimal"
-              value={
-                employerContribution
-              }
+              value={currentEPFBalance}
               onChange={(e) =>
-                setEmployerContribution(
+                setCurrentEPFBalance(
                   e.target.value,
                 )
               }
-              placeholder="Enter amount"
+              placeholder="Enter current balance"
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             />
+
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              Enter ₹0 when starting from no existing EPF balance.
+            </p>
           </div>
 
           <div>
@@ -459,8 +529,7 @@ export default function PFCalculator() {
               htmlFor="pf-rate"
               className="mb-2 block text-sm font-medium text-slate-700"
             >
-              Annual Interest Rate
-              (%)
+              EPF Interest Rate (%)
             </label>
 
             <input
@@ -469,15 +538,21 @@ export default function PFCalculator() {
               min="0"
               step="0.01"
               inputMode="decimal"
-              value={rate}
+              value={annualRate}
               onChange={(e) =>
-                setRate(
+                setAnnualRate(
                   e.target.value,
                 )
               }
               placeholder="Enter rate"
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             />
+
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              Uses {DEFAULT_RATE}% as the
+              planning default. The applicable
+              EPF interest rate can change.
+            </p>
           </div>
 
           <div>
@@ -491,25 +566,27 @@ export default function PFCalculator() {
             <input
               id="pf-tenure"
               type="number"
-              min="0.01"
-              step="0.01"
-              inputMode="decimal"
+              min="1"
+              step="1"
+              inputMode="numeric"
               value={tenure}
               onChange={(e) =>
                 setTenure(
                   e.target.value,
                 )
               }
-              placeholder="Enter years"
+              placeholder="Enter whole years"
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             />
+
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              Enter a whole number of years.
+            </p>
           </div>
 
           <button
             type="button"
-            onClick={
-              resetCalculator
-            }
+            onClick={resetCalculator}
             className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 hover:shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
           >
             Reset
@@ -541,8 +618,7 @@ export default function PFCalculator() {
             </h2>
 
             <p className="mt-1.5 text-sm leading-6 text-slate-400">
-              Estimated based on the
-              values you entered.
+              Estimated based on the values you entered.
             </p>
           </div>
 
@@ -552,8 +628,7 @@ export default function PFCalculator() {
               <div className="relative min-w-0 min-h-[176px] rounded-2xl border border-white/10 bg-white/[0.07] p-5 pb-16 backdrop-blur-sm sm:p-6 sm:pb-16">
                 <div className="flex min-w-0 items-center justify-between gap-4">
                   <p className="min-w-0 text-sm font-medium text-slate-300">
-                    Estimated EPF
-                    Value
+                    Estimated EPF Balance
                   </p>
 
                   <span className="shrink-0 rounded-full border border-amber-400/15 bg-amber-400/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-300">
@@ -574,14 +649,13 @@ export default function PFCalculator() {
                   />
                 </div>
 
-                {/* Copy action */}
                 <button
                   type="button"
                   onClick={
                     copyMaturityAmount
                   }
-                  aria-label="Copy estimated EPF value"
-                  title="Copy estimated EPF value"
+                  aria-label="Copy estimated EPF balance"
+                  title="Copy estimated EPF balance"
                   className="absolute bottom-4 right-4 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.07] text-slate-300 backdrop-blur transition-all duration-200 hover:scale-[1.03] hover:border-white/20 hover:bg-white/[0.12] hover:text-white focus:outline-none focus:ring-4 focus:ring-indigo-400/20"
                 >
                   {copied ? (
@@ -628,17 +702,16 @@ export default function PFCalculator() {
                 )}
               </div>
 
-              {/* Breakdown */}
+              {/* Contribution summary */}
               <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
                 <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-slate-200">
-                      Investment breakdown
+                      EPF balance breakdown
                     </p>
 
                     <p className="mt-1 text-xs leading-5 text-slate-400">
-                      Contributions versus
-                      interest earned
+                      Starting balance, new EPF contributions, and interest
                     </p>
                   </div>
 
@@ -651,11 +724,17 @@ export default function PFCalculator() {
                 </div>
 
                 <InteractiveDonut
+                  startingBalancePercentage={
+                    startingBalancePercentage
+                  }
                   contributionsPercentage={
                     contributionsPercentage
                   }
                   interestPercentage={
                     interestPercentage
+                  }
+                  startingBalanceAmount={
+                    result.startingEPFBalance
                   }
                   contributionsAmount={
                     result.totalContributions
@@ -674,7 +753,57 @@ export default function PFCalculator() {
                   }
                 />
 
-                <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                <div className="mt-7 grid gap-3 sm:grid-cols-3">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveSegment(
+                        "startingBalance",
+                      )
+                    }
+                    className={`min-h-12 min-w-0 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-slate-400/20 ${
+                      activeSegment ===
+                      "startingBalance"
+                        ? "border-slate-300/30 bg-slate-300/10"
+                        : "border-white/8 bg-black/10 hover:border-slate-300/20 hover:bg-slate-300/5"
+                    }`}
+                    aria-pressed={
+                      activeSegment ===
+                      "startingBalance"
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        aria-hidden="true"
+                        className="h-2.5 w-2.5 shrink-0 rounded-full bg-slate-400"
+                      />
+
+                      <p className="min-w-0 text-xs font-medium text-slate-400">
+                        Starting Balance
+                      </p>
+                    </div>
+
+                    <div className="mt-2 min-w-0 w-full">
+                      <ResultAmount
+                        value={
+                          result.startingEPFBalance
+                        }
+                        currencyCode={
+                          activeCurrency
+                        }
+                        size="card"
+                        className="text-white"
+                      />
+                    </div>
+
+                    <p className="mt-1 text-xs text-slate-500">
+                      {startingBalancePercentage.toFixed(
+                        1,
+                      )}
+                      % of balance
+                    </p>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() =>
@@ -700,8 +829,7 @@ export default function PFCalculator() {
                       />
 
                       <p className="min-w-0 text-xs font-medium text-slate-400">
-                        Total
-                        Contributions
+                        New EPF Contributions
                       </p>
                     </div>
 
@@ -722,7 +850,7 @@ export default function PFCalculator() {
                       {contributionsPercentage.toFixed(
                         1,
                       )}
-                      % of total
+                      % of balance
                     </p>
                   </button>
 
@@ -751,7 +879,7 @@ export default function PFCalculator() {
                       />
 
                       <p className="min-w-0 text-xs font-medium text-slate-400">
-                        Interest
+                        Interest Earned
                       </p>
                     </div>
 
@@ -772,10 +900,83 @@ export default function PFCalculator() {
                       {interestPercentage.toFixed(
                         1,
                       )}
-                      % of total
+                      % of balance
                     </p>
                   </button>
                 </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <div className="min-w-0 rounded-xl border border-white/8 bg-black/10 p-3">
+                    <p className="text-[11px] leading-4 text-slate-500">
+                      Employee EPF
+                    </p>
+
+                    <div className="mt-1 min-w-0">
+                      <ResultAmount
+                        value={
+                          result.totalEmployeeContributions
+                        }
+                        currencyCode={
+                          activeCurrency
+                        }
+                        size="card"
+                        className="text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="min-w-0 rounded-xl border border-white/8 bg-black/10 p-3">
+                    <p className="text-[11px] leading-4 text-slate-500">
+                      Employer EPF
+                    </p>
+
+                    <div className="mt-1 min-w-0">
+                      <ResultAmount
+                        value={
+                          result.totalEmployerEPFContributions
+                        }
+                        currencyCode={
+                          activeCurrency
+                        }
+                        size="card"
+                        className="text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="min-w-0 rounded-xl border border-white/8 bg-black/10 p-3">
+                    <p className="text-[11px] leading-4 text-slate-500">
+                      Employer EPS
+                    </p>
+
+                    <div className="mt-1 min-w-0">
+                      <ResultAmount
+                        value={
+                          result.totalEmployerEPSContributions
+                        }
+                        currencyCode={
+                          activeCurrency
+                        }
+                        size="card"
+                        className="text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Estimate note */}
+              <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-4">
+                <p className="text-xs font-semibold text-amber-300">
+                  Standard EPF estimate
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-slate-400">
+                  This estimate uses the standard ₹15,000 EPF wage ceiling,
+                  employee and employer contribution structure, and monthly
+                  running-balance interest. Higher-wage and other special
+                  EPF arrangements are not modeled.
+                </p>
               </div>
             </div>
           ) : (
@@ -799,16 +1000,14 @@ export default function PFCalculator() {
                 </div>
 
                 <p className="mt-5 text-base font-semibold text-slate-200">
-                  Your result will
-                  appear here.
+                  Your EPF result will appear here.
                 </p>
 
                 <p className="mt-2 max-w-sm text-sm leading-6 text-slate-400">
-                  Enter your employee and
-                  employer contributions,
-                  interest rate, and tenure
-                  to see your estimated
-                  EPF value.
+                  Enter your monthly Basic + DA,
+                  current EPF balance, interest
+                  rate, and tenure to see your
+                  estimated EPF balance.
                 </p>
               </div>
             </div>

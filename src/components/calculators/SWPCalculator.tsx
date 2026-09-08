@@ -12,11 +12,21 @@ function hasValidValues(
   rate: string,
   tenure: string,
 ): boolean {
+  const tenureYears = Number(tenure);
+  const exactMonths = tenureYears * 12;
+  const roundedMonths = Math.round(exactMonths);
+
+  const isWholeMonthTenure =
+    Math.abs(exactMonths - roundedMonths) <=
+    Number.EPSILON *
+      Math.max(1, Math.abs(exactMonths));
+
   return (
     Number(initialInvestment) > 0 &&
     Number(monthlyWithdrawal) >= 0 &&
     Number(rate) >= 0 &&
-    Number(tenure) > 0
+    tenureYears > 0 &&
+    isWholeMonthTenure
   );
 }
 
@@ -32,7 +42,6 @@ type OutcomeDetails = {
 };
 
 function OutcomeBar({
-  initialInvestment,
   totalWithdrawn,
   remainingValue,
   totalGrowth,
@@ -40,7 +49,6 @@ function OutcomeBar({
   onOutcomeChange,
   activeCurrency,
 }: {
-  initialInvestment: number;
   totalWithdrawn: number;
   remainingValue: number;
   totalGrowth: number;
@@ -48,26 +56,19 @@ function OutcomeBar({
   onOutcomeChange: (outcome: OutcomeKey) => void;
   activeCurrency: string;
 }) {
-  const totalReference =
-    initialInvestment +
-    Math.max(totalGrowth, 0);
+  const totalDistributed =
+    totalWithdrawn + remainingValue;
 
   const withdrawnShare =
-    totalReference > 0
-      ? Math.min(
-          (totalWithdrawn / totalReference) *
-            100,
-          100,
-        )
+    totalDistributed > 0
+      ? (totalWithdrawn / totalDistributed) *
+        100
       : 0;
 
   const remainingShare =
-    totalReference > 0
-      ? Math.min(
-          (remainingValue / totalReference) *
-            100,
-          100,
-        )
+    totalDistributed > 0
+      ? (remainingValue / totalDistributed) *
+        100
       : 0;
 
   const details: Record<
@@ -106,7 +107,7 @@ function OutcomeBar({
           </p>
 
           <p className="mt-1 text-xs leading-5 text-slate-400">
-            See how your investment is distributed.
+            See what was withdrawn and what remains.
           </p>
         </div>
 
@@ -252,6 +253,7 @@ function OutcomeBar({
         >
           <div className="flex items-center gap-2">
             <span
+              aria-hidden="true"
               className={`h-2.5 w-2.5 shrink-0 rounded-full ${
                 totalGrowth >= 0
                   ? "bg-emerald-400"
@@ -287,7 +289,7 @@ function OutcomeBar({
             >
               {totalGrowth >= 0
                 ? "Positive growth"
-                : "Capital shortfall"}
+                : "Loss after withdrawals"}
             </span>
           </div>
         </button>
@@ -358,10 +360,9 @@ export default function SWPCalculator() {
     setMonthlyWithdrawal("");
     setRate("");
     setTenure("");
+    setCurrency(null);
     setCopied(false);
-    setActiveOutcome(
-      "remaining",
-    );
+    setActiveOutcome("remaining");
   };
 
   const copyRemainingValue =
@@ -490,6 +491,11 @@ export default function SWPCalculator() {
               placeholder="Enter rate"
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             />
+
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              This is an assumed annual return used for the estimate.
+              Actual investment returns can vary.
+            </p>
           </div>
 
           <div>
@@ -503,25 +509,26 @@ export default function SWPCalculator() {
             <input
               id="swp-tenure"
               type="number"
-              min="0.01"
-              step="0.01"
+              min="0.0833"
+              step="0.0833"
               inputMode="decimal"
               value={tenure}
               onChange={(e) =>
-                setTenure(
-                  e.target.value,
-                )
+                setTenure(e.target.value)
               }
               placeholder="Enter years"
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             />
+
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              Tenure is calculated month by month, so use a value that
+              represents a whole number of months.
+            </p>
           </div>
 
           <button
             type="button"
-            onClick={
-              resetCalculator
-            }
+            onClick={resetCalculator}
             className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 hover:shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
           >
             Reset
@@ -553,7 +560,7 @@ export default function SWPCalculator() {
             </h2>
 
             <p className="mt-1.5 text-sm leading-6 text-slate-400">
-              Estimated based on the values you entered.
+              Estimated using the values you entered.
             </p>
           </div>
 
@@ -639,9 +646,6 @@ export default function SWPCalculator() {
               </div>
 
               <OutcomeBar
-                initialInvestment={Number(
-                  initialInvestment,
-                )}
                 totalWithdrawn={
                   result.totalWithdrawn
                 }
@@ -651,7 +655,9 @@ export default function SWPCalculator() {
                 totalGrowth={
                   result.totalGrowth
                 }
-                activeOutcome={activeOutcome}
+                activeOutcome={
+                  activeOutcome
+                }
                 onOutcomeChange={
                   setActiveOutcome
                 }
@@ -659,6 +665,21 @@ export default function SWPCalculator() {
                   activeCurrency
                 }
               />
+
+              {/* Estimate note */}
+              <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-4">
+                <p className="text-xs font-semibold text-amber-300">
+                  Simplified SWP estimate
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-slate-400">
+                  This calculator applies the entered expected annual return
+                  monthly before each withdrawal. Actual investment returns
+                  can vary over time, and real SWP outcomes depend on market
+                  performance, fees, taxes, withdrawal dates, and product
+                  terms.
+                </p>
+              </div>
             </div>
           ) : (
             <div className="relative mt-6 min-h-[384px] rounded-2xl border border-white/10 bg-white/[0.06] p-5 backdrop-blur-sm">

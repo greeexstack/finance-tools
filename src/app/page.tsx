@@ -12,28 +12,28 @@ const tools = [
     name: "Recurring Deposit Calculator",
     shortName: "RD",
     description:
-      "Calculate how regular monthly deposits can grow over time.",
+      "Estimate how regular monthly deposits could grow over time.",
     href: "/rd-calculator",
   },
   {
     name: "Systematic Withdrawal Plan Calculator",
     shortName: "SWP",
     description:
-      "Estimate withdrawals, remaining balance, and portfolio growth over time.",
+      "Estimate withdrawals, remaining value, and net growth over time.",
     href: "/swp-calculator",
   },
   {
     name: "EPF Calculator — India",
     shortName: "EPF",
     description:
-      "Estimate your employee provident fund growth using employee and employer contributions.",
+      "Estimate your EPF balance using Basic + DA, current balance, interest rate, and tenure.",
     href: "/pf-calculator",
   },
   {
     name: "PPF Calculator — India",
     shortName: "PPF",
     description:
-      "Estimate PPF maturity value using your contribution, deposit timing, and planning rate.",
+      "Estimate PPF maturity value using contribution amount, deposit timing, planning rate, and tenure.",
     href: "/ppf-calculator",
   },
   {
@@ -173,10 +173,10 @@ export default function HomePage() {
           </p>
 
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            These calculators provide estimates for informational and
-            planning purposes only. Results may differ from actual financial
-            products or transactions and should not be considered financial
-            advice.
+            These tools provide estimates for informational and planning
+            purposes only. Results may differ from actual financial products,
+            investments, exchange rates, or transactions and should not be
+            considered financial advice.
           </p>
         </div>
       </section>

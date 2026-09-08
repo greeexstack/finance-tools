@@ -28,10 +28,13 @@ function hasValidValues(
   rate: string,
   tenure: string,
 ): boolean {
+  const tenureValue = Number(tenure);
+
   return (
     Number(monthlyDeposit) > 0 &&
     Number(rate) >= 0 &&
-    Number(tenure) > 0
+    Number.isInteger(tenureValue) &&
+    tenureValue > 0
   );
 }
 
@@ -110,18 +113,14 @@ function InteractiveDonut({
       ? {
           label: "Interest",
           amount: interestAmount,
-          percentage:
-            interestPercentage,
-          colorClass:
-            "text-amber-300",
+          percentage: interestPercentage,
+          colorClass: "text-amber-300",
         }
       : {
           label: "Total Deposited",
           amount: depositedAmount,
-          percentage:
-            depositedPercentage,
-          colorClass:
-            "text-indigo-300",
+          percentage: depositedPercentage,
+          colorClass: "text-indigo-300",
         };
 
   return (
@@ -142,9 +141,7 @@ function InteractiveDonut({
           r={SVG_RADIUS}
           fill="none"
           stroke="rgba(255,255,255,0.06)"
-          strokeWidth={
-            SVG_STROKE_WIDTH
-          }
+          strokeWidth={SVG_STROKE_WIDTH}
         />
 
         {depositedPercentage > 0 && (
@@ -155,27 +152,21 @@ function InteractiveDonut({
             )}
             fill="none"
             stroke="#a5b4fc"
-            strokeWidth={
-              SVG_STROKE_WIDTH
-            }
+            strokeWidth={SVG_STROKE_WIDTH}
             strokeLinecap="round"
             className="cursor-pointer transition-all duration-200"
             style={{
               opacity:
-                activeSegment ===
-                "deposited"
+                activeSegment === "deposited"
                   ? 1
                   : 0.5,
               filter:
-                activeSegment ===
-                "deposited"
+                activeSegment === "deposited"
                   ? "drop-shadow(0 0 7px rgba(165,180,252,0.45))"
                   : undefined,
             }}
             onMouseEnter={() =>
-              onSegmentChange(
-                "deposited",
-              )
+              onSegmentChange("deposited")
             }
           />
         )}
@@ -188,27 +179,21 @@ function InteractiveDonut({
             )}
             fill="none"
             stroke="#fbbf24"
-            strokeWidth={
-              SVG_STROKE_WIDTH
-            }
+            strokeWidth={SVG_STROKE_WIDTH}
             strokeLinecap="round"
             className="cursor-pointer transition-all duration-200"
             style={{
               opacity:
-                activeSegment ===
-                "interest"
+                activeSegment === "interest"
                   ? 1
                   : 0.5,
               filter:
-                activeSegment ===
-                "interest"
+                activeSegment === "interest"
                   ? "drop-shadow(0 0 7px rgba(251,191,36,0.45))"
                   : undefined,
             }}
             onMouseEnter={() =>
-              onSegmentChange(
-                "interest",
-              )
+              onSegmentChange("interest")
             }
           />
         )}
@@ -229,10 +214,7 @@ function InteractiveDonut({
         </span>
 
         <span className="mt-1 text-[10px] font-medium text-slate-500">
-          {selectedSegment.percentage.toFixed(
-            1,
-          )}
-          %
+          {selectedSegment.percentage.toFixed(1)}%
         </span>
       </div>
     </div>
@@ -256,9 +238,7 @@ export default function RDCalculator() {
     useState(false);
 
   const [activeSegment, setActiveSegment] =
-    useState<DonutSegment>(
-      "deposited",
-    );
+    useState<DonutSegment>("deposited");
 
   const isValid = hasValidValues(
     monthlyDeposit,
@@ -307,38 +287,36 @@ export default function RDCalculator() {
     setMonthlyDeposit("");
     setRate("");
     setTenure("");
+    setCurrency(null);
     setCopied(false);
-    setActiveSegment(
-      "deposited",
-    );
+    setActiveSegment("deposited");
   };
 
-  const copyMaturityAmount =
-    async () => {
-      if (!result) {
-        return;
-      }
+  const copyMaturityAmount = async () => {
+    if (!result) {
+      return;
+    }
 
-      const formattedValue =
-        formatCurrency(
-          result.maturityAmount,
-          activeCurrency,
-        );
+    const formattedValue =
+      formatCurrency(
+        result.maturityAmount,
+        activeCurrency,
+      );
 
-      try {
-        await navigator.clipboard.writeText(
-          formattedValue,
-        );
+    try {
+      await navigator.clipboard.writeText(
+        formattedValue,
+      );
 
-        setCopied(true);
+      setCopied(true);
 
-        window.setTimeout(() => {
-          setCopied(false);
-        }, 1800);
-      } catch {
+      window.setTimeout(() => {
         setCopied(false);
-      }
-    };
+      }, 1800);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   return (
     <div className="grid min-w-0 gap-6 lg:grid-cols-2 lg:items-start">
@@ -356,7 +334,8 @@ export default function RDCalculator() {
             </h2>
 
             <p className="mt-1.5 text-sm leading-6 text-slate-500">
-              Enter the details below to see your estimated maturity amount.
+              Enter the monthly deposit, interest rate, and tenure to
+              estimate your RD maturity value.
             </p>
           </div>
         </div>
@@ -408,9 +387,7 @@ export default function RDCalculator() {
               inputMode="decimal"
               value={rate}
               onChange={(e) =>
-                setRate(
-                  e.target.value,
-                )
+                setRate(e.target.value)
               }
               placeholder="Enter rate"
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
@@ -433,20 +410,20 @@ export default function RDCalculator() {
               inputMode="numeric"
               value={tenure}
               onChange={(e) =>
-                setTenure(
-                  e.target.value,
-                )
+                setTenure(e.target.value)
               }
-              placeholder="Enter months"
+              placeholder="Enter whole months"
               className="min-h-12 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             />
+
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              Enter a whole number of months.
+            </p>
           </div>
 
           <button
             type="button"
-            onClick={
-              resetCalculator
-            }
+            onClick={resetCalculator}
             className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-400 hover:bg-slate-50 hover:shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
           >
             Reset
@@ -478,7 +455,7 @@ export default function RDCalculator() {
             </h2>
 
             <p className="mt-1.5 text-sm leading-6 text-slate-400">
-              Estimated based on the values you entered.
+              Estimated using the values you entered.
             </p>
           </div>
 
@@ -509,7 +486,6 @@ export default function RDCalculator() {
                   />
                 </div>
 
-                {/* Copy action */}
                 <button
                   type="button"
                   onClick={
@@ -572,15 +548,12 @@ export default function RDCalculator() {
                     </p>
 
                     <p className="mt-1 text-xs leading-5 text-slate-400">
-                      Select a segment to inspect its share
+                      Deposited amount and interest in the estimate
                     </p>
                   </div>
 
                   <span className="shrink-0 whitespace-nowrap rounded-full bg-amber-400/10 px-2.5 py-1 text-xs font-semibold text-amber-300">
-                    {interestPercentage.toFixed(
-                      1,
-                    )}
-                    % interest
+                    {interestPercentage.toFixed(1)}% interest
                   </span>
                 </div>
 
@@ -652,10 +625,8 @@ export default function RDCalculator() {
                     </div>
 
                     <p className="mt-1 text-xs text-slate-500">
-                      {depositedPercentage.toFixed(
-                        1,
-                      )}
-                      % of total
+                      {depositedPercentage.toFixed(1)}%
+                      of total
                     </p>
                   </button>
 
@@ -700,13 +671,27 @@ export default function RDCalculator() {
                     </div>
 
                     <p className="mt-1 text-xs text-slate-500">
-                      {interestPercentage.toFixed(
-                        1,
-                      )}
-                      % of total
+                      {interestPercentage.toFixed(1)}%
+                      of total
                     </p>
                   </button>
                 </div>
+              </div>
+
+              {/* Estimate note */}
+              <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-4">
+                <p className="text-xs font-semibold text-amber-300">
+                  Simplified RD estimate
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-slate-400">
+                  This calculator uses a simplified monthly-compounding
+                  model in which each monthly deposit earns the entered
+                  annual rate. Actual RD maturity may differ because banks
+                  and financial institutions can use different interest
+                  calculation methods, compounding conventions, rates,
+                  taxes, and product terms.
+                </p>
               </div>
             </div>
           ) : (

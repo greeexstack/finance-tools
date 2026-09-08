@@ -1,16 +1,44 @@
 import { NextResponse } from "next/server";
 
-const FRANKFURTER_API = "https://api.frankfurter.dev/v2";
+const FRANKFURTER_API =
+  "https://api.frankfurter.dev/v2";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
+const CURRENCY_CODE_PATTERN =
+  /^[A-Z]{3}$/;
 
-  const from = searchParams.get("from")?.toUpperCase();
-  const to = searchParams.get("to")?.toUpperCase();
+export async function GET(
+  request: Request,
+) {
+  const { searchParams } =
+    new URL(request.url);
+
+  const from = searchParams
+    .get("from")
+    ?.toUpperCase();
+
+  const to = searchParams
+    .get("to")
+    ?.toUpperCase();
 
   if (!from || !to) {
     return NextResponse.json(
-      { error: "Both 'from' and 'to' currencies are required." },
+      {
+        error:
+          "Both 'from' and 'to' currencies are required.",
+      },
+      { status: 400 },
+    );
+  }
+
+  if (
+    !CURRENCY_CODE_PATTERN.test(from) ||
+    !CURRENCY_CODE_PATTERN.test(to)
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Currency codes must be valid three-letter ISO codes.",
+      },
       { status: 400 },
     );
   }
@@ -25,7 +53,9 @@ export async function GET(request: Request) {
 
   try {
     const response = await fetch(
-      `${FRANKFURTER_API}/rate/${encodeURIComponent(from)}/${encodeURIComponent(to)}`,
+      `${FRANKFURTER_API}/rate/${encodeURIComponent(
+        from,
+      )}/${encodeURIComponent(to)}`,
       {
         headers: {
           Accept: "application/json",
@@ -38,24 +68,32 @@ export async function GET(request: Request) {
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: "Unable to fetch exchange rate." },
+        {
+          error:
+            "Unable to fetch exchange rate.",
+        },
         { status: response.status },
       );
     }
 
-    const data = (await response.json()) as {
-      date?: string;
-      base?: string;
-      quote?: string;
-      rate?: number;
-    };
+    const data =
+      (await response.json()) as {
+        date?: string;
+        base?: string;
+        quote?: string;
+        rate?: number;
+      };
 
     if (
       typeof data.rate !== "number" ||
-      !Number.isFinite(data.rate)
+      !Number.isFinite(data.rate) ||
+      data.rate <= 0
     ) {
       return NextResponse.json(
-        { error: "Invalid exchange rate received." },
+        {
+          error:
+            "Invalid exchange rate received.",
+        },
         { status: 502 },
       );
     }
@@ -68,7 +106,10 @@ export async function GET(request: Request) {
     });
   } catch {
     return NextResponse.json(
-      { error: "Exchange rate service is temporarily unavailable." },
+      {
+        error:
+          "Exchange rate service is temporarily unavailable.",
+      },
       { status: 503 },
     );
   }
