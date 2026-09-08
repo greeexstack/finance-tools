@@ -1,0 +1,179 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
+const CONTACT_EMAIL = "query.cratoo@gmail.com";
+const SUBJECT = "Finance Tools Feedback";
+
+const GMAIL_URL =
+  `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+    CONTACT_EMAIL,
+  )}&su=${encodeURIComponent(SUBJECT)}`;
+
+const OUTLOOK_URL =
+  `https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(
+    CONTACT_EMAIL,
+  )}&subject=${encodeURIComponent(SUBJECT)}`;
+
+type ContactEmailProps = {
+  variant: "icon" | "text";
+};
+
+export default function ContactEmail({
+  variant,
+}: ContactEmailProps) {
+  const [isOpen, setIsOpen] =
+    useState(false);
+
+  const wrapperRef =
+    useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handlePointerDown(
+      event: PointerEvent,
+    ) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(
+          event.target as Node,
+        )
+      ) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener(
+      "pointerdown",
+      handlePointerDown,
+    );
+
+    return () => {
+      document.removeEventListener(
+        "pointerdown",
+        handlePointerDown,
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    function handleEscape(
+      event: KeyboardEvent,
+    ) {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener(
+      "keydown",
+      handleEscape,
+    );
+
+    return () => {
+      document.removeEventListener(
+        "keydown",
+        handleEscape,
+      );
+    };
+  }, []);
+
+  return (
+    <div
+      ref={wrapperRef}
+      className="relative"
+    >
+      <button
+        type="button"
+        onClick={() =>
+          setIsOpen((open) => !open)
+        }
+        aria-label="Contact Finance Tools"
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        title="Contact us"
+        className={
+          variant === "icon"
+            ? "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+            : "inline-flex items-center gap-2 text-sm font-medium text-indigo-300 transition hover:text-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+        }
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={
+            variant === "icon"
+              ? "h-5 w-5"
+              : "h-4 w-4 shrink-0"
+          }
+          aria-hidden="true"
+        >
+          <rect
+            x="3"
+            y="5"
+            width="18"
+            height="14"
+            rx="2"
+          />
+
+          <path d="m3 7 9 6 9-6" />
+        </svg>
+
+        {variant === "text" && (
+          <span>{CONTACT_EMAIL}</span>
+        )}
+      </button>
+
+      {isOpen && (
+        <div
+          role="dialog"
+          aria-label="Email options"
+          className={`absolute z-50 mt-2 w-72 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-[0_12px_32px_rgba(15,23,42,0.14)] ${
+            variant === "icon"
+              ? "right-0"
+              : "left-0"
+          }`}
+        >
+          <p className="text-sm font-semibold text-slate-900">
+            Contact Finance Tools
+          </p>
+
+          <p className="mt-1 text-xs leading-5 text-slate-500">
+            Choose how you would like to send your
+            message.
+          </p>
+
+          <div className="mt-3 grid gap-2">
+            <a
+              href={GMAIL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setIsOpen(false)}
+              className="rounded-lg border border-slate-200 px-3 py-2.5 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+            >
+              Gmail
+            </a>
+
+            <a
+              href={OUTLOOK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setIsOpen(false)}
+              className="rounded-lg border border-slate-200 px-3 py-2.5 text-center text-xs font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+            >
+              Outlook
+            </a>
+          </div>
+
+          <p className="mt-3 text-[11px] leading-4 text-slate-400">
+            Both options use {CONTACT_EMAIL} and
+            pre-fill the subject.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}

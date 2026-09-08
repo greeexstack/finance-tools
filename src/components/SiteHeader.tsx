@@ -2,11 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
-const CONTACT_EMAIL = "query.cratoo@gmail.com";
-
-const CONTACT_MAILTO =
-  `mailto:${CONTACT_EMAIL}?subject=Finance%20Tools%20Feedback`;
+import ContactEmail from "@/components/ContactEmail";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -99,65 +95,14 @@ export default function SiteHeader() {
               ))}
             </nav>
 
-            {/* Contact email */}
-            <a
-              href={CONTACT_MAILTO}
-              aria-label="Email us"
-              title="Email us"
-              className="ml-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-5 w-5"
-                aria-hidden="true"
-              >
-                <rect
-                  x="3"
-                  y="5"
-                  width="18"
-                  height="14"
-                  rx="2"
-                />
-
-                <path d="m3 7 9 6 9-6" />
-              </svg>
-            </a>
+            <div className="ml-1">
+              <ContactEmail variant="icon" />
+            </div>
           </div>
 
           {/* Mobile email + menu */}
           <div className="ml-auto flex items-center gap-2 sm:hidden">
-            <a
-              href={CONTACT_MAILTO}
-              aria-label="Email us"
-              title="Email us"
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-5 w-5"
-                aria-hidden="true"
-              >
-                <rect
-                  x="3"
-                  y="5"
-                  width="18"
-                  height="14"
-                  rx="2"
-                />
-
-                <path d="m3 7 9 6 9-6" />
-              </svg>
-            </a>
+            <ContactEmail variant="icon" />
 
             <button
               type="button"

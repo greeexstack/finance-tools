@@ -1,9 +1,5 @@
 import Link from "next/link";
-
-const CONTACT_EMAIL = "query.cratoo@gmail.com";
-
-const CONTACT_MAILTO =
-  `mailto:${CONTACT_EMAIL}?subject=Finance%20Tools%20Feedback`;
+import ContactEmail from "@/components/ContactEmail";
 
 const calculatorLinks = [
   { name: "FD Calculator", href: "/fd-calculator" },
@@ -95,34 +91,9 @@ export default function SiteFooter() {
               Your feedback helps improve these tools.
             </p>
 
-            <a
-              href={CONTACT_MAILTO}
-              aria-label={`Email ${CONTACT_EMAIL}`}
-              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-indigo-300 transition hover:text-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-4 w-4 shrink-0"
-                aria-hidden="true"
-              >
-                <rect
-                  x="3"
-                  y="5"
-                  width="18"
-                  height="14"
-                  rx="2"
-                />
-
-                <path d="m3 7 9 6 9-6" />
-              </svg>
-
-              <span>{CONTACT_EMAIL}</span>
-            </a>
+            <div className="mt-4">
+              <ContactEmail variant="text" />
+            </div>
           </div>
 
           {/* About */}
