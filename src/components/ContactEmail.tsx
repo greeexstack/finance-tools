@@ -5,6 +5,11 @@ import { useEffect, useRef, useState } from "react";
 const CONTACT_EMAIL = "query.cratoo@gmail.com";
 const SUBJECT = "Finance Tools Feedback";
 
+const MAILTO_URL =
+  `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
+    SUBJECT,
+  )}`;
+
 const GMAIL_URL =
   `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
     CONTACT_EMAIL,
@@ -17,10 +22,12 @@ const OUTLOOK_URL =
 
 type ContactEmailProps = {
   variant: "icon" | "text";
+  behavior?: "direct" | "chooser";
 };
 
 export default function ContactEmail({
   variant,
+  behavior = "direct",
 }: ContactEmailProps) {
   const [isOpen, setIsOpen] =
     useState(false);
@@ -29,6 +36,10 @@ export default function ContactEmail({
     useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (behavior !== "chooser") {
+      return;
+    }
+
     function handlePointerDown(
       event: PointerEvent,
     ) {
@@ -53,9 +64,13 @@ export default function ContactEmail({
         handlePointerDown,
       );
     };
-  }, []);
+  }, [behavior]);
 
   useEffect(() => {
+    if (behavior !== "chooser") {
+      return;
+    }
+
     function handleEscape(
       event: KeyboardEvent,
     ) {
@@ -75,7 +90,66 @@ export default function ContactEmail({
         handleEscape,
       );
     };
-  }, []);
+  }, [behavior]);
+
+  const sharedClasses =
+    variant === "icon"
+      ? "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+      : "inline-flex items-center gap-2 text-sm font-medium text-indigo-300 transition hover:text-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30";
+
+  const content = (
+    <>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={
+          variant === "icon"
+            ? "h-5 w-5"
+            : "h-4 w-4 shrink-0"
+        }
+        aria-hidden="true"
+      >
+        <rect
+          x="3"
+          y="5"
+          width="18"
+          height="14"
+          rx="2"
+        />
+
+        <path d="m3 7 9 6 9-6" />
+      </svg>
+
+      {variant === "text" && (
+        <span>{CONTACT_EMAIL}</span>
+      )}
+    </>
+  );
+
+  if (behavior === "direct") {
+    return (
+      <a
+        href={MAILTO_URL}
+        aria-label={
+          variant === "icon"
+            ? "Email us"
+            : `Email ${CONTACT_EMAIL}`
+        }
+        title={
+          variant === "icon"
+            ? "Email us"
+            : undefined
+        }
+        className={sharedClasses}
+      >
+        {content}
+      </a>
+    );
+  }
 
   return (
     <div
@@ -91,40 +165,9 @@ export default function ContactEmail({
         aria-haspopup="dialog"
         aria-expanded={isOpen}
         title="Contact us"
-        className={
-          variant === "icon"
-            ? "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-            : "inline-flex items-center gap-2 text-sm font-medium text-indigo-300 transition hover:text-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-        }
+        className={sharedClasses}
       >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={
-            variant === "icon"
-              ? "h-5 w-5"
-              : "h-4 w-4 shrink-0"
-          }
-          aria-hidden="true"
-        >
-          <rect
-            x="3"
-            y="5"
-            width="18"
-            height="14"
-            rx="2"
-          />
-
-          <path d="m3 7 9 6 9-6" />
-        </svg>
-
-        {variant === "text" && (
-          <span>{CONTACT_EMAIL}</span>
-        )}
+        {content}
       </button>
 
       {isOpen && (

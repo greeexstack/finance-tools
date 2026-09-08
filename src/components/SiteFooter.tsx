@@ -27,7 +27,6 @@ export default function SiteFooter() {
     <footer className="bg-slate-950 text-slate-300">
       <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1fr_0.8fr_0.9fr_1fr]">
-          {/* Brand */}
           <div>
             <Link
               href="/"
@@ -52,7 +51,6 @@ export default function SiteFooter() {
             </p>
           </div>
 
-          {/* Tools */}
           <div>
             <h2 className="text-sm font-semibold text-white">
               Tools
@@ -80,7 +78,6 @@ export default function SiteFooter() {
             </nav>
           </div>
 
-          {/* Feedback */}
           <div>
             <h2 className="text-sm font-semibold text-white">
               Feedback
@@ -92,11 +89,13 @@ export default function SiteFooter() {
             </p>
 
             <div className="mt-4">
-              <ContactEmail variant="text" />
+              <ContactEmail
+                variant="text"
+                behavior="direct"
+              />
             </div>
           </div>
 
-          {/* About */}
           <div>
             <h2 className="text-sm font-semibold text-white">
               About these tools

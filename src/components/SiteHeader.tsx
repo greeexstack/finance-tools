@@ -53,7 +53,6 @@ export default function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="flex min-h-16 items-center gap-4">
-          {/* Brand */}
           <Link
             href="/"
             className="group flex min-w-0 shrink-0 items-center gap-2.5"
@@ -74,7 +73,6 @@ export default function SiteHeader() {
             </span>
           </Link>
 
-          {/* Desktop navigation + email */}
           <div className="ml-auto hidden items-center gap-1 sm:flex">
             <nav
               aria-label="Main navigation"
@@ -96,13 +94,18 @@ export default function SiteHeader() {
             </nav>
 
             <div className="ml-1">
-              <ContactEmail variant="icon" />
+              <ContactEmail
+                variant="icon"
+                behavior="chooser"
+              />
             </div>
           </div>
 
-          {/* Mobile email + menu */}
           <div className="ml-auto flex items-center gap-2 sm:hidden">
-            <ContactEmail variant="icon" />
+            <ContactEmail
+              variant="icon"
+              behavior="direct"
+            />
 
             <button
               type="button"
@@ -160,7 +163,6 @@ export default function SiteHeader() {
           </div>
         </div>
 
-        {/* Mobile navigation */}
         {isMenuOpen && (
           <nav
             id="mobile-navigation"
