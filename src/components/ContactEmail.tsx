@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  type MouseEvent,
   useEffect,
   useRef,
   useState,
@@ -39,6 +40,27 @@ type ContactEmailProps = {
     | "responsive";
 };
 
+function isMobileDevice(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  const coarsePointer =
+    window.matchMedia(
+      "(pointer: coarse)",
+    ).matches;
+
+  const narrowViewport =
+    window.matchMedia(
+      "(max-width: 767px)",
+    ).matches;
+
+  return (
+    coarsePointer ||
+    narrowViewport
+  );
+}
+
 export default function ContactEmail({
   variant,
   behavior = "direct",
@@ -51,12 +73,12 @@ export default function ContactEmail({
   const wrapperRef =
     useRef<HTMLDivElement>(null);
 
-  const supportsChooser =
+  const chooserEnabled =
     behavior === "chooser" ||
     behavior === "responsive";
 
   useEffect(() => {
-    if (!supportsChooser) {
+    if (!chooserEnabled) {
       return;
     }
 
@@ -84,10 +106,10 @@ export default function ContactEmail({
         handlePointerDown,
       );
     };
-  }, [supportsChooser]);
+  }, [chooserEnabled]);
 
   useEffect(() => {
-    if (!supportsChooser) {
+    if (!chooserEnabled) {
       return;
     }
 
@@ -110,7 +132,7 @@ export default function ContactEmail({
         handleEscape,
       );
     };
-  }, [supportsChooser]);
+  }, [chooserEnabled]);
 
   const sharedClasses =
     variant === "icon"
@@ -152,45 +174,7 @@ export default function ContactEmail({
     </>
   );
 
-  function handleContactClick(
-    event: React.MouseEvent<HTMLAnchorElement>,
-  ) {
-    /*
-     * "direct" always follows mailto.
-     * "chooser" always opens the chooser.
-     *
-     * "responsive" checks the viewport at the
-     * moment of the click:
-     * - desktop: prevent mailto and show chooser
-     * - mobile: allow the normal mailto navigation
-     */
-    if (behavior === "direct") {
-      return;
-    }
-
-    if (behavior === "responsive") {
-      const isDesktop =
-        window.matchMedia(
-          "(min-width: 768px)",
-        ).matches;
-
-      if (!isDesktop) {
-        return;
-      }
-
-      event.preventDefault();
-    } else {
-      event.preventDefault();
-    }
-
-    setIsOpen(
-      (open) => !open,
-    );
-  }
-
-  if (
-    behavior === "direct"
-  ) {
+  if (behavior === "direct") {
     return (
       <a
         href={MAILTO_URL}
@@ -211,6 +195,31 @@ export default function ContactEmail({
     );
   }
 
+  function handleClick(
+    event: MouseEvent<HTMLAnchorElement>,
+  ) {
+    if (behavior === "responsive") {
+      /*
+       * Mobile/touch devices:
+       * allow the normal mailto link to work.
+       *
+       * Desktop:
+       * prevent navigation and show the
+       * Gmail/Outlook chooser.
+       */
+      if (isMobileDevice()) {
+        setIsOpen(false);
+        return;
+      }
+    }
+
+    event.preventDefault();
+
+    setIsOpen(
+      (open) => !open,
+    );
+  }
+
   return (
     <div
       ref={wrapperRef}
@@ -218,18 +227,14 @@ export default function ContactEmail({
     >
       <a
         href={MAILTO_URL}
-        onClick={handleContactClick}
+        onClick={handleClick}
         aria-label={
           variant === "icon"
             ? "Email us"
             : `Email ${CONTACT_EMAIL}`
         }
         aria-haspopup="dialog"
-        aria-expanded={
-          behavior === "responsive"
-            ? isOpen
-            : isOpen
-        }
+        aria-expanded={isOpen}
         title={
           variant === "icon"
             ? "Email us"
@@ -255,8 +260,8 @@ export default function ContactEmail({
           </p>
 
           <p className="mt-1 text-xs leading-5 text-slate-500">
-            Choose how you would like to
-            send your message.
+            Choose how you would like to send your
+            message.
           </p>
 
           <div className="mt-3 grid gap-2">
