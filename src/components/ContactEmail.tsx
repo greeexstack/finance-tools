@@ -39,67 +39,24 @@ type ContactEmailProps = {
     | "responsive";
 };
 
-function useIsMobile() {
-  const [
-    isMobile,
-    setIsMobile,
-  ] = useState(false);
-
-  useEffect(() => {
-    const mediaQuery =
-      window.matchMedia(
-        "(max-width: 767px)",
-      );
-
-    const update = () => {
-      setIsMobile(
-        mediaQuery.matches,
-      );
-    };
-
-    update();
-
-    mediaQuery.addEventListener(
-      "change",
-      update,
-    );
-
-    return () => {
-      mediaQuery.removeEventListener(
-        "change",
-        update,
-      );
-    };
-  }, []);
-
-  return isMobile;
-}
-
 export default function ContactEmail({
   variant,
   behavior = "direct",
 }: ContactEmailProps) {
-  const [isOpen, setIsOpen] =
-    useState(false);
+  const [
+    isOpen,
+    setIsOpen,
+  ] = useState(false);
 
   const wrapperRef =
     useRef<HTMLDivElement>(null);
 
-  const isMobile = useIsMobile();
-
-  const shouldUseDirect =
-    behavior === "direct" ||
-    (behavior === "responsive" &&
-      isMobile);
-
-  const shouldUseChooser =
+  const supportsChooser =
     behavior === "chooser" ||
-    (behavior === "responsive" &&
-      !isMobile);
+    behavior === "responsive";
 
   useEffect(() => {
-    if (!shouldUseChooser) {
-      setIsOpen(false);
+    if (!supportsChooser) {
       return;
     }
 
@@ -127,10 +84,10 @@ export default function ContactEmail({
         handlePointerDown,
       );
     };
-  }, [shouldUseChooser]);
+  }, [supportsChooser]);
 
   useEffect(() => {
-    if (!shouldUseChooser) {
+    if (!supportsChooser) {
       return;
     }
 
@@ -153,7 +110,7 @@ export default function ContactEmail({
         handleEscape,
       );
     };
-  }, [shouldUseChooser]);
+  }, [supportsChooser]);
 
   const sharedClasses =
     variant === "icon"
@@ -195,7 +152,45 @@ export default function ContactEmail({
     </>
   );
 
-  if (shouldUseDirect) {
+  function handleContactClick(
+    event: React.MouseEvent<HTMLAnchorElement>,
+  ) {
+    /*
+     * "direct" always follows mailto.
+     * "chooser" always opens the chooser.
+     *
+     * "responsive" checks the viewport at the
+     * moment of the click:
+     * - desktop: prevent mailto and show chooser
+     * - mobile: allow the normal mailto navigation
+     */
+    if (behavior === "direct") {
+      return;
+    }
+
+    if (behavior === "responsive") {
+      const isDesktop =
+        window.matchMedia(
+          "(min-width: 768px)",
+        ).matches;
+
+      if (!isDesktop) {
+        return;
+      }
+
+      event.preventDefault();
+    } else {
+      event.preventDefault();
+    }
+
+    setIsOpen(
+      (open) => !open,
+    );
+  }
+
+  if (
+    behavior === "direct"
+  ) {
     return (
       <a
         href={MAILTO_URL}
@@ -216,37 +211,34 @@ export default function ContactEmail({
     );
   }
 
-  if (!shouldUseChooser) {
-    return (
-      <span
-        className={sharedClasses}
-        aria-hidden="true"
-      >
-        {content}
-      </span>
-    );
-  }
-
   return (
     <div
       ref={wrapperRef}
       className="relative"
     >
-      <button
-        type="button"
-        onClick={() =>
-          setIsOpen(
-            (open) => !open,
-          )
+      <a
+        href={MAILTO_URL}
+        onClick={handleContactClick}
+        aria-label={
+          variant === "icon"
+            ? "Email us"
+            : `Email ${CONTACT_EMAIL}`
         }
-        aria-label="Contact Finance Tools"
         aria-haspopup="dialog"
-        aria-expanded={isOpen}
-        title="Contact us"
+        aria-expanded={
+          behavior === "responsive"
+            ? isOpen
+            : isOpen
+        }
+        title={
+          variant === "icon"
+            ? "Email us"
+            : undefined
+        }
         className={sharedClasses}
       >
         {content}
-      </button>
+      </a>
 
       {isOpen && (
         <div
@@ -295,8 +287,8 @@ export default function ContactEmail({
 
           <p className="mt-3 text-[11px] leading-4 text-slate-400">
             Both options use{" "}
-            {CONTACT_EMAIL} and
-            pre-fill the subject.
+            {CONTACT_EMAIL} and pre-fill
+            the subject.
           </p>
         </div>
       )}
