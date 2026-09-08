@@ -18,16 +18,20 @@ export type PPFCalculationInput = {
 
   annualRate: number;
 
+  /**
+   * PPF maturity is 15 years.
+   * Further projections should use 5-year extension blocks.
+   */
   tenureYears?: number;
 
   contributionFrequency?: PPFContributionFrequency;
 
   /**
-   * Whether monthly contributions are treated as being
-   * deposited on/before the 5th or after the 5th.
+   * Whether deposits are treated as being made
+   * on/before the 5th or after the 5th of the month.
    *
-   * For yearly contributions, the calculator assumes the
-   * annual deposit is made in April.
+   * For yearly contributions, the calculator models
+   * the annual contribution as an April deposit.
    */
   contributionTiming?: PPFContributionTiming;
 };
@@ -51,24 +55,37 @@ const CONTRIBUTION_MULTIPLE = 50;
 
 const MONTHS_PER_YEAR = 12;
 
+const VALID_FREQUENCIES: PPFContributionFrequency[] = [
+  "yearly",
+  "monthly",
+];
+
+const VALID_TIMINGS: PPFContributionTiming[] = [
+  "before5th",
+  "after5th",
+];
+
 /**
  * PPF calculator estimate.
  *
- * Official PPF interest mechanics:
+ * Calculation model:
  * - Interest is calculated for each calendar month.
  * - The applicable balance is the lowest balance between
  *   the close of the 5th day and the end of that month.
- * - Interest is credited to the account at the end of the year.
- *
- * Simplified calculator assumptions:
+ * - Interest is credited at the end of the financial year.
  * - The financial year is modeled as April through March.
- * - Yearly contributions are deposited in April.
- * - Monthly mode models one equal deposit per month.
- * - The selected timing applies to each monthly deposit.
  *
- * Actual account results can differ because actual deposit dates,
- * interest-rate changes, withdrawals, and other account activity
- * can affect the balance.
+ * Calculator assumptions:
+ * - Yearly contributions are modeled as an April deposit.
+ * - Monthly contributions are modeled as one equal deposit
+ *   in each month.
+ * - The selected contribution timing is applied to deposits.
+ * - The supplied annual rate is treated as a constant planning
+ *   rate for the entire projection.
+ *
+ * This is an estimate, not an official PPF account statement.
+ * Actual results depend on Government-notified rates, actual
+ * deposit dates, withdrawals, and other account activity.
  */
 export function calculatePPF({
   contributionAmount,
@@ -94,6 +111,34 @@ export function calculatePPF({
     return null;
   }
 
+  if (
+    !VALID_FREQUENCIES.includes(
+      contributionFrequency,
+    )
+  ) {
+    return null;
+  }
+
+  if (
+    !VALID_TIMINGS.includes(
+      contributionTiming,
+    )
+  ) {
+    return null;
+  }
+
+  /*
+   * PPF maturity is 15 years.
+   *
+   * A longer projection should follow 5-year extension blocks.
+   */
+  if (
+    tenureYears < 15 ||
+    (tenureYears - 15) % 5 !== 0
+  ) {
+    return null;
+  }
+
   const years = tenureYears;
 
   const annualContribution =
@@ -103,7 +148,8 @@ export function calculatePPF({
 
   /*
    * PPF annual subscription limits:
-   * minimum ₹500, maximum ₹1,50,000.
+   * minimum ₹500
+   * maximum ₹1,50,000
    */
   if (
     annualContribution <
@@ -115,7 +161,7 @@ export function calculatePPF({
   }
 
   /*
-   * PPF deposits must be in multiples of ₹50.
+   * Contributions must be in multiples of ₹50.
    */
   if (
     annualContribution %
@@ -126,8 +172,8 @@ export function calculatePPF({
   }
 
   /*
-   * In monthly mode, validate the selected monthly
-   * contribution itself as a ₹50 multiple.
+   * For monthly mode, the monthly contribution itself
+   * is also required to be a multiple of ₹50.
    */
   if (
     contributionFrequency === "monthly" &&
@@ -139,7 +185,9 @@ export function calculatePPF({
   }
 
   const monthlyRate =
-    annualRate / MONTHS_PER_YEAR / 100;
+    annualRate /
+    MONTHS_PER_YEAR /
+    100;
 
   let balance = 0;
   let totalContributions = 0;
@@ -158,11 +206,16 @@ export function calculatePPF({
     ) {
       let contributionThisMonth = 0;
 
-      if (contributionFrequency === "yearly") {
+      if (
+        contributionFrequency ===
+        "yearly"
+      ) {
         /*
-         * Financial-year model:
-         * annual contribution is assumed to be deposited
-         * in April, represented by month 0.
+         * PPF financial year:
+         * April is represented by month 0.
+         *
+         * The full annual contribution is modeled
+         * as being deposited in April.
          */
         if (month === 0) {
           contributionThisMonth =
@@ -171,7 +224,7 @@ export function calculatePPF({
       } else {
         /*
          * Monthly mode:
-         * one equal contribution is modeled each month.
+         * one equal deposit is modeled every month.
          */
         contributionThisMonth =
           contributionAmount;
@@ -182,26 +235,27 @@ export function calculatePPF({
 
       if (contributionThisMonth > 0) {
         balance += contributionThisMonth;
+
         totalContributions +=
           contributionThisMonth;
       }
 
       /*
-       * PPF interest is based on the lowest balance between
-       * the close of the 5th day and the end of the month.
+       * Interest basis:
        *
-       * A deposit made on/before the 5th participates in the
-       * month's eligible balance.
+       * Deposit on/before the 5th:
+       * included in that month's eligible balance.
        *
-       * A deposit made after the 5th does not participate in
-       * that month's eligible balance.
+       * Deposit after the 5th:
+       * excluded from that month's eligible balance.
        *
-       * For yearly contributions, this timing represents the
-       * assumed April deposit timing as well.
+       * For a yearly contribution, the deposit is assumed
+       * to occur in April.
        */
       const interestEligibleBalance =
         contributionThisMonth > 0 &&
-        contributionTiming === "after5th"
+        contributionTiming ===
+          "after5th"
           ? balanceBeforeContribution
           : balance;
 
@@ -212,11 +266,12 @@ export function calculatePPF({
 
     /*
      * Interest is credited at the end of the year.
-     * Fractional rupees are rounded to the nearest rupee.
+     * We round the annual credited interest to the nearest rupee.
      */
-    balance += Math.round(
-      yearlyInterest,
-    );
+    const creditedInterest =
+      Math.round(yearlyInterest);
+
+    balance += creditedInterest;
   }
 
   const interestEarned =

@@ -1,8 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import {
+  useMemo,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import { calculatePF } from "@/lib/pf-calculator";
-import CurrencySelector from "@/components/calculators/CurrencySelector";
 import ResultAmount from "@/components/calculators/ResultAmount";
 import {
   formatCompactCurrency,
@@ -13,8 +16,10 @@ const DEFAULT_RATE = 8.25;
 
 const SVG_SIZE = 160;
 const SVG_CENTER = SVG_SIZE / 2;
-const SVG_RADIUS = 58;
-const SVG_STROKE_WIDTH = 24;
+const SVG_RADIUS = 52;
+const SVG_STROKE_WIDTH = 18;
+
+const CURRENCY_CODE = "INR";
 
 type DonutSegment =
   | "startingBalance"
@@ -37,12 +42,32 @@ function hasValidValues(
   annualRate: string,
   tenure: string,
 ): boolean {
-  const tenureValue = Number(tenure);
+  const monthlyBasicDAValue =
+    Number(monthlyBasicDA);
+
+  const currentEPFBalanceValue =
+    Number(currentEPFBalance);
+
+  const annualRateValue =
+    Number(annualRate);
+
+  const tenureValue =
+    Number(tenure);
 
   return (
-    Number(monthlyBasicDA) > 0 &&
-    Number(currentEPFBalance) >= 0 &&
-    Number(annualRate) >= 0 &&
+    Number.isFinite(
+      monthlyBasicDAValue,
+    ) &&
+    Number.isFinite(
+      currentEPFBalanceValue,
+    ) &&
+    Number.isFinite(
+      annualRateValue,
+    ) &&
+    Number.isFinite(tenureValue) &&
+    monthlyBasicDAValue > 0 &&
+    currentEPFBalanceValue >= 0 &&
+    annualRateValue >= 0 &&
     Number.isInteger(tenureValue) &&
     tenureValue > 0
   );
@@ -55,7 +80,8 @@ function polarToCartesian(
   angleInDegrees: number,
 ) {
   const angleInRadians =
-    ((angleInDegrees - 90) * Math.PI) / 180;
+    ((angleInDegrees - 90) * Math.PI) /
+    180;
 
   return {
     x:
@@ -73,22 +99,29 @@ function describeArc(
   startAngle: number,
   endAngle: number,
 ) {
-  const start = polarToCartesian(
-    SVG_CENTER,
-    SVG_CENTER,
-    SVG_RADIUS,
-    endAngle,
-  );
+  const safeEndAngle =
+    endAngle >= 360
+      ? 359.999
+      : endAngle;
 
-  const end = polarToCartesian(
-    SVG_CENTER,
-    SVG_CENTER,
-    SVG_RADIUS,
-    startAngle,
-  );
+  const start =
+    polarToCartesian(
+      SVG_CENTER,
+      SVG_CENTER,
+      SVG_RADIUS,
+      safeEndAngle,
+    );
+
+  const end =
+    polarToCartesian(
+      SVG_CENTER,
+      SVG_CENTER,
+      SVG_RADIUS,
+      startAngle,
+    );
 
   const largeArcFlag =
-    endAngle - startAngle <= 180
+    safeEndAngle - startAngle <= 180
       ? "0"
       : "1";
 
@@ -105,7 +138,6 @@ function InteractiveDonut({
   startingBalanceAmount,
   contributionsAmount,
   interestAmount,
-  activeCurrency,
   activeSegment,
   onSegmentChange,
 }: {
@@ -115,7 +147,6 @@ function InteractiveDonut({
   startingBalanceAmount: number;
   contributionsAmount: number;
   interestAmount: number;
-  activeCurrency: string;
   activeSegment: DonutSegment;
   onSegmentChange: (
     segment: DonutSegment,
@@ -130,7 +161,8 @@ function InteractiveDonut({
     3.6;
 
   const selectedSegment: SegmentDetails =
-    activeSegment === "startingBalance"
+    activeSegment ===
+    "startingBalance"
       ? {
           label: "Starting Balance",
           amount: startingBalanceAmount,
@@ -143,21 +175,37 @@ function InteractiveDonut({
         ? {
             label: "Interest Earned",
             amount: interestAmount,
-            percentage: interestPercentage,
+            percentage:
+              interestPercentage,
             colorClass:
               "text-amber-300",
           }
         : {
-            label: "New EPF Contributions",
-            amount: contributionsAmount,
+            label:
+              "New EPF Contributions",
+            amount:
+              contributionsAmount,
             percentage:
               contributionsPercentage,
             colorClass:
               "text-indigo-300",
           };
 
+  function handleSegmentKeyDown(
+    event: ReactKeyboardEvent<SVGPathElement>,
+    segment: DonutSegment,
+  ) {
+    if (
+      event.key === "Enter" ||
+      event.key === " "
+    ) {
+      event.preventDefault();
+      onSegmentChange(segment);
+    }
+  }
+
   return (
-    <div className="relative mx-auto mt-7 flex h-44 w-44 items-center justify-center">
+    <div className="relative mx-auto flex h-44 w-44 shrink-0 items-center justify-center">
       <div
         aria-hidden="true"
         className="absolute inset-3 rounded-full bg-indigo-400/10 blur-xl"
@@ -166,7 +214,8 @@ function InteractiveDonut({
       <svg
         viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`}
         className="relative h-40 w-40 overflow-visible"
-        aria-hidden="true"
+        role="img"
+        aria-label="EPF balance breakdown"
       >
         <circle
           cx={SVG_CENTER}
@@ -189,7 +238,10 @@ function InteractiveDonut({
             fill="none"
             stroke="#94a3b8"
             strokeWidth={
-              SVG_STROKE_WIDTH
+              activeSegment ===
+              "startingBalance"
+                ? SVG_STROKE_WIDTH + 2
+                : SVG_STROKE_WIDTH
             }
             strokeLinecap="round"
             className="cursor-pointer transition-all duration-200"
@@ -198,15 +250,39 @@ function InteractiveDonut({
                 activeSegment ===
                 "startingBalance"
                   ? 1
-                  : 0.5,
+                  : 0.45,
               filter:
                 activeSegment ===
                 "startingBalance"
-                  ? "drop-shadow(0 0 7px rgba(148,163,184,0.4))"
+                  ? "drop-shadow(0 0 8px rgba(148,163,184,0.42))"
                   : undefined,
             }}
+            tabIndex={0}
+            role="button"
+            aria-label={`Starting Balance: ${formatCurrency(
+              startingBalanceAmount,
+              CURRENCY_CODE,
+            )}, ${startingBalancePercentage.toFixed(
+              1,
+            )}%`}
             onMouseEnter={() =>
               onSegmentChange(
+                "startingBalance",
+              )
+            }
+            onFocus={() =>
+              onSegmentChange(
+                "startingBalance",
+              )
+            }
+            onClick={() =>
+              onSegmentChange(
+                "startingBalance",
+              )
+            }
+            onKeyDown={(event) =>
+              handleSegmentKeyDown(
+                event,
                 "startingBalance",
               )
             }
@@ -223,7 +299,10 @@ function InteractiveDonut({
             fill="none"
             stroke="#a5b4fc"
             strokeWidth={
-              SVG_STROKE_WIDTH
+              activeSegment ===
+              "contributions"
+                ? SVG_STROKE_WIDTH + 2
+                : SVG_STROKE_WIDTH
             }
             strokeLinecap="round"
             className="cursor-pointer transition-all duration-200"
@@ -232,15 +311,39 @@ function InteractiveDonut({
                 activeSegment ===
                 "contributions"
                   ? 1
-                  : 0.5,
+                  : 0.45,
               filter:
                 activeSegment ===
                 "contributions"
-                  ? "drop-shadow(0 0 7px rgba(165,180,252,0.45))"
+                  ? "drop-shadow(0 0 8px rgba(165,180,252,0.45))"
                   : undefined,
             }}
+            tabIndex={0}
+            role="button"
+            aria-label={`New EPF Contributions: ${formatCurrency(
+              contributionsAmount,
+              CURRENCY_CODE,
+            )}, ${contributionsPercentage.toFixed(
+              1,
+            )}%`}
             onMouseEnter={() =>
               onSegmentChange(
+                "contributions",
+              )
+            }
+            onFocus={() =>
+              onSegmentChange(
+                "contributions",
+              )
+            }
+            onClick={() =>
+              onSegmentChange(
+                "contributions",
+              )
+            }
+            onKeyDown={(event) =>
+              handleSegmentKeyDown(
+                event,
                 "contributions",
               )
             }
@@ -256,7 +359,9 @@ function InteractiveDonut({
             fill="none"
             stroke="#fbbf24"
             strokeWidth={
-              SVG_STROKE_WIDTH
+              activeSegment === "interest"
+                ? SVG_STROKE_WIDTH + 2
+                : SVG_STROKE_WIDTH
             }
             strokeLinecap="round"
             className="cursor-pointer transition-all duration-200"
@@ -265,15 +370,33 @@ function InteractiveDonut({
                 activeSegment ===
                 "interest"
                   ? 1
-                  : 0.5,
+                  : 0.45,
               filter:
                 activeSegment ===
                 "interest"
-                  ? "drop-shadow(0 0 7px rgba(251,191,36,0.45))"
+                  ? "drop-shadow(0 0 8px rgba(251,191,36,0.45))"
                   : undefined,
             }}
+            tabIndex={0}
+            role="button"
+            aria-label={`Interest Earned: ${formatCurrency(
+              interestAmount,
+              CURRENCY_CODE,
+            )}, ${interestPercentage.toFixed(
+              1,
+            )}%`}
             onMouseEnter={() =>
-              onSegmentChange(
+              onSegmentChange("interest")
+            }
+            onFocus={() =>
+              onSegmentChange("interest")
+            }
+            onClick={() =>
+              onSegmentChange("interest")
+            }
+            onKeyDown={(event) =>
+              handleSegmentKeyDown(
+                event,
                 "interest",
               )
             }
@@ -283,15 +406,15 @@ function InteractiveDonut({
 
       <div className="pointer-events-none absolute flex h-[102px] w-[102px] flex-col items-center justify-center rounded-full border border-white/10 bg-slate-950/95 px-2 text-center shadow-inner">
         <span
-          className={`text-[10px] font-semibold uppercase tracking-[0.12em] ${selectedSegment.colorClass}`}
+          className={`max-w-full text-[10px] font-semibold uppercase leading-tight tracking-[0.12em] ${selectedSegment.colorClass}`}
         >
           {selectedSegment.label}
         </span>
 
-        <span className="mt-1 max-w-full break-words text-base font-bold leading-tight tracking-tight text-white">
+        <span className="mt-1 max-w-[88px] whitespace-nowrap text-center text-sm font-bold leading-tight tracking-tight text-white">
           {formatCompactCurrency(
             selectedSegment.amount,
-            activeCurrency,
+            CURRENCY_CODE,
           )}
         </span>
 
@@ -317,14 +440,15 @@ export default function PFCalculator() {
     setCurrentEPFBalance,
   ] = useState("0");
 
-  const [annualRate, setAnnualRate] =
-    useState(String(DEFAULT_RATE));
+  const [
+    annualRate,
+    setAnnualRate,
+  ] = useState(
+    String(DEFAULT_RATE),
+  );
 
   const [tenure, setTenure] =
     useState("");
-
-  const [currency, setCurrency] =
-    useState<string | null>(null);
 
   const [copied, setCopied] =
     useState(false);
@@ -366,9 +490,6 @@ export default function PFCalculator() {
     isValid,
   ]);
 
-  const activeCurrency =
-    currency ?? "INR";
-
   const startingBalancePercentage =
     result &&
     result.maturityAmount > 0
@@ -396,9 +517,10 @@ export default function PFCalculator() {
   const resetCalculator = () => {
     setMonthlyBasicDA("");
     setCurrentEPFBalance("0");
-    setAnnualRate(String(DEFAULT_RATE));
+    setAnnualRate(
+      String(DEFAULT_RATE),
+    );
     setTenure("");
-    setCurrency(null);
     setCopied(false);
     setActiveSegment(
       "contributions",
@@ -414,7 +536,7 @@ export default function PFCalculator() {
       const formattedValue =
         formatCurrency(
           result.maturityAmount,
-          activeCurrency,
+          CURRENCY_CODE,
         );
 
       try {
@@ -461,11 +583,6 @@ export default function PFCalculator() {
         </div>
 
         <div className="mt-7 space-y-5">
-          <CurrencySelector
-            value={currency}
-            onChange={setCurrency}
-          />
-
           <div>
             <label
               htmlFor="pf-basic-da"
@@ -607,7 +724,6 @@ export default function PFCalculator() {
         />
 
         <div className="relative min-w-0">
-          {/* Result header */}
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-300">
               Result
@@ -636,13 +752,13 @@ export default function PFCalculator() {
                   </span>
                 </div>
 
-                <div className="mt-4 min-w-0 w-full">
+                <div className="mt-4 min-w-0 w-full overflow-hidden">
                   <ResultAmount
                     value={
                       result.maturityAmount
                     }
                     currencyCode={
-                      activeCurrency
+                      CURRENCY_CODE
                     }
                     size="hero"
                     className="text-white"
@@ -704,7 +820,7 @@ export default function PFCalculator() {
 
               {/* Contribution summary */}
               <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
-                <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
+                <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-slate-200">
                       EPF balance breakdown
@@ -715,7 +831,7 @@ export default function PFCalculator() {
                     </p>
                   </div>
 
-                  <span className="shrink-0 whitespace-nowrap rounded-full bg-amber-400/10 px-2.5 py-1 text-xs font-semibold text-amber-300">
+                  <span className="w-fit shrink-0 whitespace-nowrap rounded-full bg-amber-400/10 px-2.5 py-1 text-xs font-semibold text-amber-300">
                     {interestPercentage.toFixed(
                       1,
                     )}
@@ -742,9 +858,6 @@ export default function PFCalculator() {
                   interestAmount={
                     result.interestEarned
                   }
-                  activeCurrency={
-                    activeCurrency
-                  }
                   activeSegment={
                     activeSegment
                   }
@@ -753,7 +866,7 @@ export default function PFCalculator() {
                   }
                 />
 
-                <div className="mt-7 grid gap-3 sm:grid-cols-3">
+                <div className="mt-6 grid min-w-0 gap-3 sm:grid-cols-3">
                   <button
                     type="button"
                     onClick={() =>
@@ -761,7 +874,7 @@ export default function PFCalculator() {
                         "startingBalance",
                       )
                     }
-                    className={`min-h-12 min-w-0 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-slate-400/20 ${
+                    className={`min-w-0 rounded-xl border p-3 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-slate-400/20 sm:p-3.5 ${
                       activeSegment ===
                       "startingBalance"
                         ? "border-slate-300/30 bg-slate-300/10"
@@ -772,31 +885,31 @@ export default function PFCalculator() {
                       "startingBalance"
                     }
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex min-w-0 items-start gap-2">
                       <span
                         aria-hidden="true"
-                        className="h-2.5 w-2.5 shrink-0 rounded-full bg-slate-400"
+                        className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-slate-400"
                       />
 
-                      <p className="min-w-0 text-xs font-medium text-slate-400">
+                      <p className="min-w-0 break-words text-xs font-medium leading-4 text-slate-400">
                         Starting Balance
                       </p>
                     </div>
 
-                    <div className="mt-2 min-w-0 w-full">
-                      <ResultAmount
-                        value={
-                          result.startingEPFBalance
-                        }
-                        currencyCode={
-                          activeCurrency
-                        }
-                        size="card"
-                        className="text-white"
-                      />
-                    </div>
+                    <p
+                      className="mt-2 min-w-0 break-words text-sm font-bold leading-tight tracking-tight text-white sm:text-[15px]"
+                      title={formatCurrency(
+                        result.startingEPFBalance,
+                        CURRENCY_CODE,
+                      )}
+                    >
+                      {formatCompactCurrency(
+                        result.startingEPFBalance,
+                        CURRENCY_CODE,
+                      )}
+                    </p>
 
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs leading-4 text-slate-500">
                       {startingBalancePercentage.toFixed(
                         1,
                       )}
@@ -811,7 +924,7 @@ export default function PFCalculator() {
                         "contributions",
                       )
                     }
-                    className={`min-h-12 min-w-0 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-400/20 ${
+                    className={`min-w-0 rounded-xl border p-3 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-400/20 sm:p-3.5 ${
                       activeSegment ===
                       "contributions"
                         ? "border-indigo-300/30 bg-indigo-300/10"
@@ -822,31 +935,31 @@ export default function PFCalculator() {
                       "contributions"
                     }
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex min-w-0 items-start gap-2">
                       <span
                         aria-hidden="true"
-                        className="h-2.5 w-2.5 shrink-0 rounded-full bg-indigo-300 shadow-[0_0_8px_rgba(165,180,252,0.45)]"
+                        className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-indigo-300 shadow-[0_0_8px_rgba(165,180,252,0.45)]"
                       />
 
-                      <p className="min-w-0 text-xs font-medium text-slate-400">
+                      <p className="min-w-0 break-words text-xs font-medium leading-4 text-slate-400">
                         New EPF Contributions
                       </p>
                     </div>
 
-                    <div className="mt-2 min-w-0 w-full">
-                      <ResultAmount
-                        value={
-                          result.totalContributions
-                        }
-                        currencyCode={
-                          activeCurrency
-                        }
-                        size="card"
-                        className="text-white"
-                      />
-                    </div>
+                    <p
+                      className="mt-2 min-w-0 break-words text-sm font-bold leading-tight tracking-tight text-white sm:text-[15px]"
+                      title={formatCurrency(
+                        result.totalContributions,
+                        CURRENCY_CODE,
+                      )}
+                    >
+                      {formatCompactCurrency(
+                        result.totalContributions,
+                        CURRENCY_CODE,
+                      )}
+                    </p>
 
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs leading-4 text-slate-500">
                       {contributionsPercentage.toFixed(
                         1,
                       )}
@@ -861,7 +974,7 @@ export default function PFCalculator() {
                         "interest",
                       )
                     }
-                    className={`min-h-12 min-w-0 rounded-xl border p-4 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-amber-400/20 ${
+                    className={`min-w-0 rounded-xl border p-3 text-left transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-amber-400/20 sm:p-3.5 ${
                       activeSegment ===
                       "interest"
                         ? "border-amber-300/30 bg-amber-300/10"
@@ -872,31 +985,31 @@ export default function PFCalculator() {
                       "interest"
                     }
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex min-w-0 items-start gap-2">
                       <span
                         aria-hidden="true"
-                        className="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.45)]"
+                        className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.45)]"
                       />
 
-                      <p className="min-w-0 text-xs font-medium text-slate-400">
+                      <p className="min-w-0 break-words text-xs font-medium leading-4 text-slate-400">
                         Interest Earned
                       </p>
                     </div>
 
-                    <div className="mt-2 min-w-0 w-full">
-                      <ResultAmount
-                        value={
-                          result.interestEarned
-                        }
-                        currencyCode={
-                          activeCurrency
-                        }
-                        size="card"
-                        className="text-white"
-                      />
-                    </div>
+                    <p
+                      className="mt-2 min-w-0 break-words text-sm font-bold leading-tight tracking-tight text-white sm:text-[15px]"
+                      title={formatCurrency(
+                        result.interestEarned,
+                        CURRENCY_CODE,
+                      )}
+                    >
+                      {formatCompactCurrency(
+                        result.interestEarned,
+                        CURRENCY_CODE,
+                      )}
+                    </p>
 
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs leading-4 text-slate-500">
                       {interestPercentage.toFixed(
                         1,
                       )}
@@ -905,24 +1018,24 @@ export default function PFCalculator() {
                   </button>
                 </div>
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="mt-4 grid min-w-0 gap-3 sm:grid-cols-3">
                   <div className="min-w-0 rounded-xl border border-white/8 bg-black/10 p-3">
                     <p className="text-[11px] leading-4 text-slate-500">
                       Employee EPF
                     </p>
 
-                    <div className="mt-1 min-w-0">
-                      <ResultAmount
-                        value={
-                          result.totalEmployeeContributions
-                        }
-                        currencyCode={
-                          activeCurrency
-                        }
-                        size="card"
-                        className="text-white"
-                      />
-                    </div>
+                    <p
+                      className="mt-1 min-w-0 break-words text-sm font-bold leading-tight tracking-tight text-white"
+                      title={formatCurrency(
+                        result.totalEmployeeContributions,
+                        CURRENCY_CODE,
+                      )}
+                    >
+                      {formatCompactCurrency(
+                        result.totalEmployeeContributions,
+                        CURRENCY_CODE,
+                      )}
+                    </p>
                   </div>
 
                   <div className="min-w-0 rounded-xl border border-white/8 bg-black/10 p-3">
@@ -930,18 +1043,18 @@ export default function PFCalculator() {
                       Employer EPF
                     </p>
 
-                    <div className="mt-1 min-w-0">
-                      <ResultAmount
-                        value={
-                          result.totalEmployerEPFContributions
-                        }
-                        currencyCode={
-                          activeCurrency
-                        }
-                        size="card"
-                        className="text-white"
-                      />
-                    </div>
+                    <p
+                      className="mt-1 min-w-0 break-words text-sm font-bold leading-tight tracking-tight text-white"
+                      title={formatCurrency(
+                        result.totalEmployerEPFContributions,
+                        CURRENCY_CODE,
+                      )}
+                    >
+                      {formatCompactCurrency(
+                        result.totalEmployerEPFContributions,
+                        CURRENCY_CODE,
+                      )}
+                    </p>
                   </div>
 
                   <div className="min-w-0 rounded-xl border border-white/8 bg-black/10 p-3">
@@ -949,18 +1062,18 @@ export default function PFCalculator() {
                       Employer EPS
                     </p>
 
-                    <div className="mt-1 min-w-0">
-                      <ResultAmount
-                        value={
-                          result.totalEmployerEPSContributions
-                        }
-                        currencyCode={
-                          activeCurrency
-                        }
-                        size="card"
-                        className="text-white"
-                      />
-                    </div>
+                    <p
+                      className="mt-1 min-w-0 break-words text-sm font-bold leading-tight tracking-tight text-white"
+                      title={formatCurrency(
+                        result.totalEmployerEPSContributions,
+                        CURRENCY_CODE,
+                      )}
+                    >
+                      {formatCompactCurrency(
+                        result.totalEmployerEPSContributions,
+                        CURRENCY_CODE,
+                      )}
+                    </p>
                   </div>
                 </div>
               </div>
