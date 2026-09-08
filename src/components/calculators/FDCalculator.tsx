@@ -488,7 +488,7 @@ export default function FDCalculator() {
             </p>
 
             <h2 className="mt-2 text-xl font-semibold tracking-tight text-white sm:text-2xl">
-              Your FD result
+              Estimated FD result
             </h2>
 
             <p className="mt-1.5 text-sm leading-6 text-slate-400">
@@ -738,12 +738,12 @@ export default function FDCalculator() {
                 </div>
 
                 <p className="mt-5 text-base font-semibold text-slate-200">
-                  Your result will appear here.
+                  Your fixed deposit result will appear here.
                 </p>
 
                 <p className="mt-2 max-w-sm text-sm leading-6 text-slate-400">
-                  Enter your principal amount, interest rate, and tenure to
-                  see your estimated maturity amount and interest earned.
+                  Enter your deposit amount, interest rate, and tenure to see
+                  your estimated maturity amount and interest earned.
                 </p>
               </div>
             </div>
