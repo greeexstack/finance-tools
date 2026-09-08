@@ -40,24 +40,40 @@ type ContactEmailProps = {
     | "responsive";
 };
 
-function isMobileDevice(): boolean {
+function isMobileOrTouchDevice(): boolean {
   if (typeof window === "undefined") {
     return false;
   }
-
-  const coarsePointer =
-    window.matchMedia(
-      "(pointer: coarse)",
-    ).matches;
 
   const narrowViewport =
     window.matchMedia(
       "(max-width: 767px)",
     ).matches;
 
+  const coarsePointer =
+    window.matchMedia(
+      "(pointer: coarse)",
+    ).matches;
+
+  const touchPoints =
+    typeof navigator !== "undefined" &&
+    navigator.maxTouchPoints > 0;
+
+  const touchEventSupport =
+    "ontouchstart" in window;
+
+  const mobileUserAgent =
+    typeof navigator !== "undefined" &&
+    /Android|iPhone|iPad|iPod|Mobile/i.test(
+      navigator.userAgent,
+    );
+
   return (
+    narrowViewport ||
     coarsePointer ||
-    narrowViewport
+    touchPoints ||
+    touchEventSupport ||
+    mobileUserAgent
   );
 }
 
@@ -65,10 +81,8 @@ export default function ContactEmail({
   variant,
   behavior = "direct",
 }: ContactEmailProps) {
-  const [
-    isOpen,
-    setIsOpen,
-  ] = useState(false);
+  const [isOpen, setIsOpen] =
+    useState(false);
 
   const wrapperRef =
     useRef<HTMLDivElement>(null);
@@ -198,19 +212,22 @@ export default function ContactEmail({
   function handleClick(
     event: MouseEvent<HTMLAnchorElement>,
   ) {
-    if (behavior === "responsive") {
-      /*
-       * Mobile/touch devices:
-       * allow the normal mailto link to work.
-       *
-       * Desktop:
-       * prevent navigation and show the
-       * Gmail/Outlook chooser.
-       */
-      if (isMobileDevice()) {
-        setIsOpen(false);
-        return;
-      }
+    /*
+     * Responsive behavior:
+     *
+     * Mobile/touch device:
+     * allow the native mailto link to run.
+     *
+     * Desktop:
+     * stop navigation and show the
+     * Gmail / Outlook chooser.
+     */
+    if (
+      behavior === "responsive" &&
+      isMobileOrTouchDevice()
+    ) {
+      setIsOpen(false);
+      return;
     }
 
     event.preventDefault();

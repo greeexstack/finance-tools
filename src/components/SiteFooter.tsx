@@ -83,10 +83,10 @@ return (
         </p>
 
         <div className="mt-4">
-          <ContactEmail
-            variant="text"
-            behavior="chooser"
-          />
+        <ContactEmail
+          variant="text"
+          behavior="responsive"
+        />
         </div>
       </div>
 
