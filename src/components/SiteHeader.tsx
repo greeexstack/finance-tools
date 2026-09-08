@@ -5,6 +5,9 @@ import { useEffect, useState } from "react";
 
 const CONTACT_EMAIL = "query.cratoo@gmail.com";
 
+const CONTACT_MAILTO =
+  `mailto:${CONTACT_EMAIL}?subject=Finance%20Tools%20Feedback`;
+
 const navigation = [
   { name: "Home", href: "/" },
   { name: "FD", href: "/fd-calculator" },
@@ -96,8 +99,9 @@ export default function SiteHeader() {
               ))}
             </nav>
 
+            {/* Contact email */}
             <a
-              href={`mailto:${CONTACT_EMAIL}`}
+              href={CONTACT_MAILTO}
               aria-label="Email us"
               title="Email us"
               className="ml-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
@@ -128,7 +132,7 @@ export default function SiteHeader() {
           {/* Mobile email + menu */}
           <div className="ml-auto flex items-center gap-2 sm:hidden">
             <a
-              href={`mailto:${CONTACT_EMAIL}`}
+              href={CONTACT_MAILTO}
               aria-label="Email us"
               title="Email us"
               className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"

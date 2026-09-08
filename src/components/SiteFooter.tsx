@@ -2,6 +2,9 @@ import Link from "next/link";
 
 const CONTACT_EMAIL = "query.cratoo@gmail.com";
 
+const CONTACT_MAILTO =
+  `mailto:${CONTACT_EMAIL}?subject=Finance%20Tools%20Feedback`;
+
 const calculatorLinks = [
   { name: "FD Calculator", href: "/fd-calculator" },
   { name: "RD Calculator", href: "/rd-calculator" },
@@ -93,7 +96,8 @@ export default function SiteFooter() {
             </p>
 
             <a
-              href={`mailto:${CONTACT_EMAIL}`}
+              href={CONTACT_MAILTO}
+              aria-label={`Email ${CONTACT_EMAIL}`}
               className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-indigo-300 transition hover:text-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
             >
               <svg
@@ -117,7 +121,7 @@ export default function SiteFooter() {
                 <path d="m3 7 9 6 9-6" />
               </svg>
 
-              {CONTACT_EMAIL}
+              <span>{CONTACT_EMAIL}</span>
             </a>
           </div>
 
