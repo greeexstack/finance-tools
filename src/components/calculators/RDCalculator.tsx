@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { calculateRD } from "@/lib/rd-calculator";
-import CurrencySelector from "@/components/calculators/CurrencySelector";
 import ResultAmount from "@/components/calculators/ResultAmount";
 import {
   formatCompactCurrency,
@@ -231,9 +230,6 @@ export default function RDCalculator() {
   const [tenure, setTenure] =
     useState("");
 
-  const [currency, setCurrency] =
-    useState<string | null>(null);
-
   const [copied, setCopied] =
     useState(false);
 
@@ -264,8 +260,7 @@ export default function RDCalculator() {
     isValid,
   ]);
 
-  const activeCurrency =
-    currency ?? "INR";
+  const activeCurrency = "INR";
 
   const depositedPercentage =
     result &&
@@ -287,7 +282,6 @@ export default function RDCalculator() {
     setMonthlyDeposit("");
     setRate("");
     setTenure("");
-    setCurrency(null);
     setCopied(false);
     setActiveSegment("deposited");
   };
@@ -329,6 +323,9 @@ export default function RDCalculator() {
           />
 
           <div className="min-w-0">
+            <p className="text-sm font-medium text-muted-foreground">
+               India • Recurring Deposit
+            </p>
             <h2 className="text-xl font-semibold tracking-tight text-slate-900">
               Enter your RD details
             </h2>
@@ -341,11 +338,6 @@ export default function RDCalculator() {
         </div>
 
         <div className="mt-7 space-y-5">
-          <CurrencySelector
-            value={currency}
-            onChange={setCurrency}
-          />
-
           <div>
             <label
               htmlFor="rd-monthly-deposit"
