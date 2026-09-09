@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { calculateSWP } from "@/lib/swp-calculator";
-import CurrencySelector from "@/components/calculators/CurrencySelector";
 import ResultAmount from "@/components/calculators/ResultAmount";
 import { formatCurrency } from "@/lib/format-currency";
 
@@ -61,14 +60,12 @@ function OutcomeBar({
 
   const withdrawnShare =
     totalDistributed > 0
-      ? (totalWithdrawn / totalDistributed) *
-        100
+      ? (totalWithdrawn / totalDistributed) * 100
       : 0;
 
   const remainingShare =
     totalDistributed > 0
-      ? (remainingValue / totalDistributed) *
-        100
+      ? (remainingValue / totalDistributed) * 100
       : 0;
 
   const details: Record<
@@ -95,8 +92,7 @@ function OutcomeBar({
     },
   };
 
-  const selected =
-    details[activeOutcome];
+  const selected = details[activeOutcome];
 
   return (
     <div className="mt-6 min-w-0 rounded-2xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm sm:p-6">
@@ -118,7 +114,6 @@ function OutcomeBar({
         </div>
       </div>
 
-      {/* Outcome bar */}
       <div className="mt-6">
         <div className="h-3 overflow-hidden rounded-full bg-white/5">
           <div className="flex h-full w-full">
@@ -157,7 +152,6 @@ function OutcomeBar({
         </div>
       </div>
 
-      {/* Outcome selector */}
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         <button
           type="button"
@@ -315,9 +309,6 @@ export default function SWPCalculator() {
   const [tenure, setTenure] =
     useState("");
 
-  const [currency, setCurrency] =
-    useState<string | null>(null);
-
   const [copied, setCopied] =
     useState(false);
 
@@ -352,15 +343,13 @@ export default function SWPCalculator() {
     isValid,
   ]);
 
-  const activeCurrency =
-    currency ?? "INR";
+  const activeCurrency = "INR";
 
   const resetCalculator = () => {
     setInitialInvestment("");
     setMonthlyWithdrawal("");
     setRate("");
     setTenure("");
-    setCurrency(null);
     setCopied(false);
     setActiveOutcome("remaining");
   };
@@ -403,7 +392,11 @@ export default function SWPCalculator() {
           />
 
           <div className="min-w-0">
-            <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600">
+              India • Systematic Withdrawal Plan
+            </p>
+
+            <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">
               Enter your SWP details
             </h2>
 
@@ -415,11 +408,6 @@ export default function SWPCalculator() {
         </div>
 
         <div className="mt-7 space-y-5">
-          <CurrencySelector
-            value={currency}
-            onChange={setCurrency}
-          />
-
           <div>
             <label
               htmlFor="swp-investment"
@@ -549,7 +537,6 @@ export default function SWPCalculator() {
         />
 
         <div className="relative min-w-0">
-          {/* Result header */}
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-300">
               Result
@@ -566,7 +553,6 @@ export default function SWPCalculator() {
 
           {result ? (
             <div className="relative mt-6 min-w-0 space-y-4">
-              {/* Main value */}
               <div className="relative min-w-0 min-h-[176px] rounded-2xl border border-white/10 bg-white/[0.07] p-5 pb-16 backdrop-blur-sm sm:p-6 sm:pb-16">
                 <div className="flex min-w-0 items-center justify-between gap-4">
                   <p className="min-w-0 text-sm font-medium text-slate-300">
@@ -591,7 +577,6 @@ export default function SWPCalculator() {
                   />
                 </div>
 
-                {/* Copy action */}
                 <button
                   type="button"
                   onClick={
@@ -666,7 +651,6 @@ export default function SWPCalculator() {
                 }
               />
 
-              {/* Estimate note */}
               <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-4">
                 <p className="text-xs font-semibold text-amber-300">
                   Simplified SWP estimate

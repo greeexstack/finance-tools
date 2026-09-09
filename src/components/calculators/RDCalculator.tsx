@@ -323,13 +323,12 @@ export default function RDCalculator() {
           />
 
           <div className="min-w-0">
-            <p className="text-sm font-medium text-muted-foreground">
-               India • Recurring Deposit
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600">
+              India • Recurring Deposit
             </p>
-            <h2 className="text-xl font-semibold tracking-tight text-slate-900">
-              Enter your RD details
-            </h2>
-
+           <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">
+            Enter your RD details 
+           </h2>
             <p className="mt-1.5 text-sm leading-6 text-slate-500">
               Enter the monthly deposit, interest rate, and tenure to
               estimate your RD maturity value.

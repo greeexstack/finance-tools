@@ -47,15 +47,14 @@ export default function ResultAmount({
   );
 
   return (
-    <div className="min-w-0 w-full max-w-full overflow-hidden">
+    <div className="w-full min-w-0 max-w-full overflow-x-auto overflow-y-hidden overscroll-x-contain">
       <p
-        className={`block w-full max-w-full overflow-hidden whitespace-nowrap font-bold leading-none tracking-tight ${className}`}
+        className={`block w-max min-w-full whitespace-nowrap font-bold leading-none tracking-tight ${className}`}
         style={{
           fontSize: getFontSize(
             formattedValue,
             size,
           ),
-          textOverflow: "clip",
         }}
         title={formattedValue}
       >

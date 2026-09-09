@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import CurrencySelector from "@/components/calculators/CurrencySelector";
 import ResultAmount from "@/components/calculators/ResultAmount";
-import { formatCurrency } from "@/lib/format-currency";
 import {
   detectDefaultCurrency,
   saveCurrencyPreference,
@@ -32,8 +31,7 @@ function formatRateDate(date: string) {
 }
 
 export default function CurrencyConverter() {
-  const [amount, setAmount] =
-    useState("");
+  const [amount, setAmount] = useState("");
 
   const [fromCurrency, setFromCurrency] =
     useState<string | null>(null);
@@ -50,8 +48,7 @@ export default function CurrencyConverter() {
   const [isLoading, setIsLoading] =
     useState(false);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const defaultCurrency =
@@ -72,9 +69,7 @@ export default function CurrencyConverter() {
 
   useEffect(() => {
     if (fromCurrency) {
-      saveCurrencyPreference(
-        fromCurrency,
-      );
+      saveCurrencyPreference(fromCurrency);
     }
   }, [fromCurrency]);
 
@@ -209,10 +204,10 @@ export default function CurrencyConverter() {
   }
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-      <div className="space-y-5">
+    <div className="min-w-0 overflow-visible rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-7">
+      <div className="min-w-0 space-y-5">
         {/* Amount */}
-        <div>
+        <div className="min-w-0">
           <label
             htmlFor="currency-amount"
             className="mb-2 block text-sm font-medium text-slate-700"
@@ -228,15 +223,13 @@ export default function CurrencyConverter() {
             inputMode="decimal"
             value={amount}
             onChange={(event) =>
-              setAmount(
-                event.target.value,
-              )
+              setAmount(event.target.value)
             }
             placeholder="Enter amount"
             aria-invalid={
               hasInvalidAmount
             }
-            className={`min-h-12 w-full rounded-xl border bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-4 ${
+            className={`min-h-12 w-full min-w-0 rounded-xl border bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-4 ${
               hasInvalidAmount
                 ? "border-red-300 focus:border-red-500 focus:ring-red-500/10"
                 : "border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/10"
@@ -251,18 +244,20 @@ export default function CurrencyConverter() {
         </div>
 
         {/* Currency selection */}
-        <div className="grid items-end gap-4 sm:grid-cols-[1fr_auto_1fr]">
-          <CurrencySelector
-            value={fromCurrency}
-            onChange={setFromCurrency}
-            label="From"
-          />
+        <div className="grid min-w-0 grid-cols-1 items-end gap-3 sm:grid-cols-[1fr_auto_1fr] sm:gap-4">
+          <div className="min-w-0">
+            <CurrencySelector
+              value={fromCurrency}
+              onChange={setFromCurrency}
+              label="From"
+            />
+          </div>
 
           <button
             type="button"
             onClick={handleSwap}
             aria-label="Swap currencies"
-            className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+            className="mx-auto inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 sm:mb-6 sm:h-12 sm:w-12"
           >
             <svg
               viewBox="0 0 24 24"
@@ -281,26 +276,28 @@ export default function CurrencyConverter() {
             </svg>
           </button>
 
-          <CurrencySelector
-            value={toCurrency}
-            onChange={setToCurrency}
-            label="To"
-          />
+          <div className="min-w-0">
+            <CurrencySelector
+              value={toCurrency}
+              onChange={setToCurrency}
+              label="To"
+            />
+          </div>
         </div>
 
         {/* Result */}
-        <div className="min-w-0 rounded-2xl bg-slate-50 p-5 sm:p-6">
+        <div className="min-w-0 overflow-hidden rounded-2xl bg-slate-50 p-4 sm:p-6">
           <p className="text-sm font-medium text-slate-500">
             Converted amount
           </p>
 
           {isLoading ? (
             <div
-              className="mt-3 flex min-h-[58px] items-center"
+              className="mt-3 flex min-h-[58px] min-w-0 items-center"
               aria-live="polite"
             >
               <div
-                className="h-8 w-36 animate-pulse rounded-lg bg-slate-200"
+                className="h-8 w-36 max-w-full animate-pulse rounded-lg bg-slate-200"
                 aria-hidden="true"
               />
 
@@ -315,7 +312,7 @@ export default function CurrencyConverter() {
           ) : convertedAmount !== null &&
             toCurrency ? (
             <>
-              <div className="mt-3 min-w-0">
+              <div className="mt-3 min-w-0 max-w-full">
                 <ResultAmount
                   value={convertedAmount}
                   currencyCode={toCurrency}
@@ -326,7 +323,7 @@ export default function CurrencyConverter() {
 
               {fromCurrency &&
                 rate !== null && (
-                  <p className="mt-3 text-sm leading-6 text-slate-500">
+                  <p className="mt-3 break-words text-sm leading-6 text-slate-500">
                     1 {fromCurrency} ={" "}
                     {formatRate(rate)}{" "}
                     {toCurrency}
@@ -334,7 +331,7 @@ export default function CurrencyConverter() {
                 )}
 
               {rateDate ? (
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs leading-5 text-slate-400">
                   Latest available rate dated{" "}
                   {formatRateDate(rateDate)}.
                 </p>
@@ -343,14 +340,14 @@ export default function CurrencyConverter() {
                 toCurrency &&
                 fromCurrency ===
                   toCurrency && (
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs leading-5 text-slate-400">
                     Same-currency conversion.
                   </p>
                 )
               )}
             </>
           ) : (
-            <p className="mt-2 text-xl font-semibold text-slate-400">
+            <p className="mt-2 break-words text-lg font-semibold leading-7 text-slate-400 sm:text-xl">
               Enter an amount to convert
             </p>
           )}
