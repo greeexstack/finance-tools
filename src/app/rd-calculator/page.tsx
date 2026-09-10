@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import CalculatorPage from "@/components/calculators/CalculatorPage";
 import RDCalculator from "@/components/calculators/RDCalculator";
+import ExpandableSection from "@/components/seo/ExpandableSection";
 
 export const metadata: Metadata = {
   title: "RD Calculator — Recurring Deposit Calculator India",
   description:
-    "Calculate your recurring deposit maturity amount and interest earned using your monthly deposit, interest rate, and tenure in India.",
+    "Calculate your recurring deposit maturity amount and interest earned using monthly deposit, annual interest rate, and tenure.",
   alternates: {
     canonical: "/rd-calculator",
   },
@@ -13,129 +13,149 @@ export const metadata: Metadata = {
 
 export default function RDCalculatorPage() {
   return (
-    <CalculatorPage
-      eyebrow="India • Recurring Deposit"
-      title="RD Calculator"
-      description="Use this RD calculator to estimate your maturity amount, total deposits, and interest earned from a recurring deposit based on your monthly deposit, interest rate, and tenure."
-      infoTitle="How the RD calculation works"
-      infoContent={
-        <>
-          <p>
-            A recurring deposit (RD) allows you to deposit a fixed amount at
-            regular intervals, usually every month, for a selected period.
-            This RD calculator estimates the maturity value of those monthly
-            deposits using the entered annual interest rate and tenure.
+    <main className="min-h-screen overflow-x-hidden bg-slate-50 text-slate-900">
+      <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <header className="mx-auto max-w-3xl text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 sm:text-sm">
+            Finance Tools
           </p>
 
-          <p className="mt-4">
-            Enter your monthly deposit, annual interest rate, and tenure to
-            estimate the total amount deposited, interest earned, and maturity
-            amount at the end of the selected period.
-          </p>
+          <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight sm:text-5xl">
+            RD Calculator
+          </h1>
 
-          <div className="mt-5 rounded-xl bg-slate-50 p-4 font-mono text-sm">
-            Maturity Amount = PMT × ((1 + r)^n − 1) ÷ r
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:mt-5 sm:text-lg sm:leading-8">
+            Calculate your estimated recurring deposit maturity amount and
+            interest earned using your monthly deposit, interest rate, and
+            tenure.
+          </p>
+        </header>
+
+        <section className="mx-auto mt-8 w-full max-w-4xl sm:mt-10">
+          <RDCalculator />
+        </section>
+
+        <section className="mx-auto mt-8 w-full max-w-4xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm sm:mt-10">
+          <div className="px-5 py-5 sm:px-6 sm:py-6">
+            <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+              About Recurring Deposits
+            </h2>
           </div>
 
-          <p className="mt-3 text-sm text-slate-500">
-            PMT = monthly deposit, r = monthly interest rate, and n = total
-            number of monthly deposits. The monthly rate used by this
-            calculator is the entered annual rate divided by 12 and converted
-            from a percentage to a decimal.
-          </p>
+          <div className="px-5 sm:px-6">
+            <ExpandableSection title="What is a recurring deposit?">
+              <p>
+                A recurring deposit (RD) allows you to deposit a fixed amount
+                regularly, usually every month, for a predetermined tenure.
+                The deposited amount earns interest according to the applicable
+                RD interest rate and account terms.
+              </p>
+            </ExpandableSection>
 
-          <p className="mt-4">
-            The calculator treats the monthly deposits as a level series of
-            payments earning the entered annual rate with monthly compounding.
-            It calculates the estimated maturity amount from the accumulated
-            value of those monthly deposits.
-          </p>
+            <ExpandableSection title="How is RD interest calculated?">
+              <p>
+                RD maturity depends on the amount deposited each month, the
+                interest rate, and the duration of the deposit. RD products
+                commonly use quarterly compounding, although the exact
+                calculation convention can vary between banks and financial
+                institutions.
+              </p>
 
-          <h3 className="mt-7 text-lg font-semibold text-slate-900">
-            What is an RD?
-          </h3>
+              <p className="mt-3">
+                This calculator uses a monthly growth model to estimate the
+                maturity amount based on the values entered. Because different
+                RD calculators and financial institutions may use different
+                installment-timing and compounding conventions, the result
+                should be treated as an estimate.
+              </p>
+            </ExpandableSection>
 
-          <p className="mt-2">
-            A recurring deposit is a savings product in which you make a
-            regular deposit, typically every month, instead of investing one
-            large amount at the beginning. Each deposit contributes to the
-            overall maturity value, while interest is earned according to the
-            applicable RD terms.
-          </p>
+            <ExpandableSection title="How does the RD calculator work?">
+              <p>
+                Enter your monthly deposit, annual interest rate, and tenure.
+                The calculator estimates the total amount deposited over the
+                selected period and calculates the estimated interest earned
+                and maturity amount.
+              </p>
 
-          <p className="mt-4">
-            An RD can be useful when you want to build savings gradually through
-            regular deposits. Your final maturity amount depends on factors
-            such as how much you deposit each month, the interest rate, and the
-            length of the RD.
-          </p>
+              <div className="mt-4 overflow-x-auto rounded-xl bg-slate-50 p-4 font-mono text-sm text-slate-700">
+                Total deposited = Monthly deposit × Number of months
+              </div>
 
-          <h3 className="mt-7 text-lg font-semibold text-slate-900">
-            What affects your RD maturity amount?
-          </h3>
+              <p className="mt-4">
+                The estimated interest is the difference between the maturity
+                amount and the total amount deposited.
+              </p>
+            </ExpandableSection>
 
-          <p className="mt-2">
-            The estimated maturity amount changes with your monthly deposit,
-            annual interest rate, and tenure. Increasing the monthly deposit
-            generally increases the total amount accumulated. A higher assumed
-            interest rate can increase the estimated interest earned, while a
-            longer tenure gives the deposits more time to accumulate interest.
-          </p>
+            <ExpandableSection title="What affects RD maturity amount?">
+              <p>
+                The main factors affecting RD maturity are the monthly deposit,
+                interest rate, and tenure. Increasing the monthly deposit or
+                extending the tenure generally increases the total amount
+                deposited and can increase the interest earned. The applicable
+                interest rate and calculation convention also affect the final
+                maturity value.
+              </p>
+            </ExpandableSection>
 
-          <p className="mt-4">
-            The timing of individual deposits also matters in real RD products.
-            Earlier deposits generally have more time to earn interest than
-            later deposits. This is one reason the exact maturity calculation
-            can depend on the rules and conventions used by the financial
-            institution.
-          </p>
+            <ExpandableSection title="Why can my RD result differ from a bank's quote?">
+              <p>
+                Banks may use specific RD calculation rules, quarterly
+                compounding conventions, installment timing, rounding methods,
+                and product-specific terms. These details can produce a
+                different maturity amount from a simplified calculator model.
+              </p>
 
-          <h3 className="mt-7 text-lg font-semibold text-slate-900">
-            Why can an RD calculator differ from a bank quote?
-          </h3>
+              <p className="mt-3">
+                Use this calculator as an estimate and compare the result with
+                the official maturity information provided by your bank or
+                financial institution.
+              </p>
+            </ExpandableSection>
 
-          <p className="mt-2">
-            This calculator provides a simplified estimate rather than an
-            official maturity quote from a bank or financial institution.
-            Actual RD maturity values can differ because institutions may use
-            different interest-calculation conventions, compounding rules,
-            deposit-date assumptions, rounding methods, applicable rates, and
-            product-specific terms.
-          </p>
+            <ExpandableSection title="Does the RD calculator account for missed installments?">
+              <p>
+                This calculator assumes that the stated monthly deposit is made
+                regularly for the full selected tenure. It does not model
+                missed installments, delayed payments, penalties, or
+                account-specific charges.
+              </p>
+            </ExpandableSection>
 
-          <p className="mt-4">
-            The calculation used here models the deposits as a monthly series
-            earning the entered annual rate with monthly compounding. Your
-            bank's actual RD calculation may follow a different convention, so
-            its maturity amount may not exactly match this estimate.
-          </p>
+            <ExpandableSection title="What about RD tax and senior-citizen rates?">
+              <p>
+                The actual interest rate offered by a bank can depend on the
+                customer and the specific RD product. Senior citizens may
+                receive different rates depending on the institution and
+                applicable terms.
+              </p>
 
-          <h3 className="mt-7 text-lg font-semibold text-slate-900">
-            What does this RD calculator show?
-          </h3>
+              <p className="mt-3">
+                Tax treatment can also affect the amount you ultimately keep.
+                This calculator focuses on estimating the deposit maturity and
+                interest and does not calculate individual tax liability.
+              </p>
+            </ExpandableSection>
 
-          <p className="mt-2">
-            The calculator provides three main results: your total deposited
-            amount, estimated interest earned, and estimated maturity amount.
-            Total deposited is the monthly deposit multiplied by the number of
-            months in the selected tenure. Estimated interest is the difference
-            between the maturity amount and your total deposits.
-          </p>
+            <ExpandableSection title="Important assumptions">
+              <p>
+                This calculator provides an estimate based on the monthly
+                deposit, annual interest rate, and tenure entered by the user.
+                It does not account for every bank-specific RD rule,
+                installment timing convention, penalty, tax treatment, special
+                interest rate, or other account-specific condition.
+              </p>
 
-          <p className="mt-4">
-            Use these results to understand how changing your monthly deposit,
-            interest rate, or tenure can affect the estimated outcome of an RD.
-          </p>
-
-          <p className="mt-4">
-            This calculator is intended for planning and educational estimates.
-            It does not provide a guaranteed return or replace an official
-            maturity calculation from a bank or other financial institution.
-          </p>
-        </>
-      }
-    >
-      <RDCalculator />
-    </CalculatorPage>
+              <p className="mt-3">
+                For an exact maturity value, refer to the terms and maturity
+                calculation provided by the relevant bank or financial
+                institution.
+              </p>
+            </ExpandableSection>
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }
